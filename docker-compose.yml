@@ -9,12 +9,15 @@ services:
     ports:
       - 5000:5000
     depends_on:
-      - my-mysql 
+      - my-mysql
+      
     environment:
       MYSQL_HOST: ${MYSQL_HOST}
       MYSQL_PORT: ${MYSQL_PORT}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT: ${MYSQL_ROOT}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_VIEW_USER: ${MYSQL_VIEW_USER}
+      MYSQL_VIEW_USER_PASSWORD: ${MYSQL_VIEW_USER_PASSWORD}
       MYSQL_DB: ${MYSQL_DB}
 
   my-mysql:
@@ -26,8 +29,10 @@ services:
       MYSQL_DATABASE: ${MYSQL_DB}
       MYSQL_USER: ${MYSQL_ROOT_USER}
       MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_ROOT: ${MYSQL_ROOT}
     volumes:
-      - mysql-data:/var/lib/mysql  
+      - mysql-data:/var/lib/mysql
+      - ./sql-scripts:/docker-entrypoint-initdb.d  
 
 volumes:
   mysql-data:
