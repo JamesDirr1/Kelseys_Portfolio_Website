@@ -1,6 +1,5 @@
-from flask import Flask, jsonify, request, redirect, url_for
-import time
-import logging
+from flask import Flask, request, redirect
+import time, logging
 from mysql_connections.mysql_root import Root
 from utility_classes import custom_logger
 from routes.route_category import category_routes
@@ -11,7 +10,7 @@ from routes.route_image import image_routes
 app = Flask(__name__)
 
 
-def app_start_up(): #Function that handles anthing that need to be setup before handling any request.
+def app_start_up(): #Function that handles anything that need to be setup before handling any request.
     logger.info("---- APP STARTING ----")
     
     logger.register("category_routes")
