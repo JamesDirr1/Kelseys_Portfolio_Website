@@ -2,7 +2,9 @@ import pymysql
 from pymysql.cursors import DictCursor
 from dotenv import load_dotenv
 import os
+import time
 from flask import current_app
+import utility_classes.custom_logger
 
 #MySQL class that acts as the Root user for executing MYSQL querries that require root level premisons.
 #This should only be called when needed.
@@ -19,9 +21,10 @@ class Root():
         self.db = os.getenv('MYSQL_DB')
         self.view_user = os.getenv('MYSQL_VIEW_USER')
         self.view_user_password = os.getenv('MYSQL_VIEW_USER_PASSWORD')
+        self.logger = utility_classes.custom_logger.log("ROOT")
 
     def create_connection(self): #Function that creates a PyMySQL connection using the variables outlined above
-        current_app.logger.info("<ROOT> Connection created")
+        self.logger.info("Connection created")
         connection = pymysql.connect(
             host=self.host,
             port=self.port,
@@ -39,36 +42,38 @@ class Root():
                        'VV.project', 'category',
                         'image', 'project'}
         
-        current_app.logger.info("<ROOT> Testing connections to the database")
-        current_app.logger.info("<ROOT> Connectionn Opening")
+        self.logger.info("Testing connection to database")
+        start_time = time.time()
+        self.logger.con_open()
         connection = self.create_connection()
         cursor = connection.cursor()
         try:
             with connection.cursor() as cursor:
-                current_app.logger.debug("Show tables;") 
                 cursor.execute("Show tables;") #Query the database for a list of all tables.
                 tables = cursor.fetchall()
+                self.logger.query("Show tables;", f"{tables}")
                 current_tables = {table['Tables_in_Portfolio'] for table in tables} #Turns result into a set of tables.
-                current_app.logger.debug(f"<ROOT> Tables: {current_tables}")
                 table_dif = need_tables - current_tables #Subtracts the tables in the currently in the database.
-                current_app.logger.debug(f"<ROOT> DIFF: {table_dif}")
+                self.logger.debug(f"Table Diff: {table_dif}")
                 if len(table_dif) == 0: #Checks if the length of the results of the diffrents in table sets. 
                     status = True
-                    current_app.logger.info("<ROOT> All tables are in the database")
+                    self.logger.info("All tables have been created - Database is ready")
                 else:
-                    current_app.logger.error(f"<ROOT> Tables do not match. Missing tables: {table_dif}")
+                    self.logger.error(f"Tables do not match. Missing tables: {table_dif}")
         except pymysql.MySQLError as e:
-            current_app.logger.error(f"<ROOT> Unable to connect to server: {e}")
+            self.logger.error(f"Unable to connect to server: {e}")
         finally:
             cursor.close()
             connection.close()
-            current_app.logger.info("<Root> Connection to the database closing")
+            end_time = time.time() - start_time
+            self.logger.con_close(end_time)
             return(status) #Returns status True if all tables made, false other wise. 
 
 
 
     def create_users(self): #Function that creates any other users need in the database. 
-        current_app.logger.info("<ROOT> Connection to DB Starting")
+        self.logger.con_open()
+        start_time = time.time()
         connection = self.create_connection()
         cursor = connection.cursor()
         queries = [ #List of queries that need executed when making the users.
@@ -79,17 +84,18 @@ class Root():
                    ]
         try: 
             with connection.cursor() as cursor:
-                current_app.logger.info(f"<ROOT> Createing Users")
+                self.logger.info("Createing Users")
                 #Specficaly execute create user queery so that password is not logged. 
                 cursor.execute(f"CREATE USER IF NOT EXISTS 'View_User'@'%' IDENTIFIED BY '{self.view_user_password}';")
-                current_app.logger.debug("<ROOT> CREATE USER IF NOT EXISTS 'View_User'@'%' IDENTIFIED BY 'view_user_password';")
+                self.logger.debug("CREATE USER IF NOT EXISTS 'View_User'@'%' IDENTIFIED BY 'view_user_password';")
                 for query in queries: #Loops through querries and excutes one at a time. 
-                     current_app.logger.debug(f"<ROOT> {query}")
+                     self.logger.debug(f"{query}")
                      cursor.execute(query)
                 connection.commit
         except pymysql.MySQLError as e:
-                current_app.logger.error(f"<ROOT> Was not able to create users: {e}")
+                self.logger.error(f"Was not able to create users: {e}")
         finally:
-             current_app.logger.info("<ROOT> Conneciton to DB CLOSING")
              cursor.close()
              connection.close()
+             end_time = time.time() - start_time
+             self.logger.con_close(end_time)
