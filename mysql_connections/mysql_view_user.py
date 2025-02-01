@@ -2,6 +2,9 @@ import pymysql, os, time, utility_classes.custom_logger
 from pymysql.cursors import DictCursor
 from dotenv import load_dotenv
 
+#MySQL class that acts as the view user for executing MYSQL queries that are limited to the database views.
+#Uses PyMySQL to execute queries. 
+
 class View_User():
     def __init__(self): #Load .env file and set variables need to connect to the mysql database as the View_user.
         load_dotenv
