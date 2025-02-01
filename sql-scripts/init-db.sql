@@ -125,5 +125,18 @@ END$$
 
 DELIMITER ;
 
+DELIMITER $$
+
+CREATE PROCEDURE clear_data()
+BEGIN
+    DELETE from category; DELETE from project;
+    DELETE FROM image;
+    ALTER TABLE image AUTO_INCREMENT = 1;
+    ALTER TABLE project AUTO_INCREMENT = 1;
+    ALTER TABLE category AUTO_INCREMENT = 1;
+END$$
+
+DELIMITER ;
+
 
     

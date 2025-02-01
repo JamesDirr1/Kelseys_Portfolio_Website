@@ -109,16 +109,18 @@ class Root():
         connection = self.create_connection()
         cursor = connection.cursor()
         query = "select * from `category`;"
-        test_data = "Call test_data()"
+        test_data = "Call clear_data(); Call test_data();"
         try:
             with connection.cursor() as cursor:
                 self.logger.info("Testing if there is already data")
                 cursor.execute(query)
                 result = cursor.fetchall()
                 self.logger.query(query, result)
-                if len(result) == 0:
-                    self.logger.info("Creating test data")
-                    cursor.execute(test_data)
+                if len(result) == 0: #Check if there is any data already in the database
+                    self.logger.info("Creating test data") 
+                    cursor.execute("Call clear_data();")
+                    cursor.execute("Call test_data();")
+                    connection.commit()
                     self.logger.debug(test_data)
                 else:
                     self.logger.info("Database already has data")
