@@ -13,6 +13,7 @@
         "cursorclass",
         "dotenv",
         "initdb",
+        "jsonify",
         "kelseysportfoliowebsite",
         "levelname"
     ]

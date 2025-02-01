@@ -43,7 +43,7 @@ class View_User():
         finally:
             connection.close()
             cursor.close()
-            end_time = time.time - start_time
+            end_time = time.time()- start_time
             self.logger.con_close(end_time)
             self.logger.debug(f"Results: {results}")
             return(results)
@@ -61,12 +61,6 @@ class View_User():
         results = self.fetch_all(query)
         return (results)
         
-    def get_category(self, id):#Function that attempts to query the database to get specific category by ID
-        self.logger.info(f"Getting category {id}")
-        query = f"SELECT * FROM Portfolio.`VV.category` WHERE category_id = {id};"
-        results = self.fetch_all(query)
-        return (results)
-    
     def get_all_projects(self):#Function that attempts to query the database to get list of all projects
         self.logger.info("Getting all projects")
         query = "SELECT * FROM Portfolio.`VV.project`;"
@@ -80,6 +74,16 @@ class View_User():
         else: 
             self.logger.info(f"getting all projects from category {id}")
             query = f"SELECT * FROM Portfolio.`VV.project` WHERE category_id = {id};"
+        results = self.fetch_all(query)
+        return (results)
+    
+    def get_projects_by_category_title(self, title, sort):#Function that attempts to query the database to get a list of projects for a specific category by title
+        if sort:
+            self.logger.info(f"getting all projects from category {title} - Sorted")
+            query = f"SELECT * FROM Portfolio.`VV.project` WHERE category_title = {title} ORDER BY project_date ASC;"
+        else: 
+            self.logger.info(f"getting all projects from category {title}")
+            query = f"SELECT * FROM Portfolio.`VV.project` WHERE category_title = {title};"
         results = self.fetch_all(query)
         return (results)
     

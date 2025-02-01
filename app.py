@@ -9,6 +9,7 @@ from routes.route_image import image_routes
  
 app = Flask(__name__)
 
+app.secret_key = 'your-secret-key' 
 
 def app_start_up(): #Function that handles anything that need to be setup before handling any request.
     logger.info("---- APP STARTING ----")
