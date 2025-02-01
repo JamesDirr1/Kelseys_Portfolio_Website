@@ -67,6 +67,7 @@ class Root():
 
 
     def create_users(self): #Function that creates any other users need in the database. 
+        self.logger.info("Creating users")
         self.logger.con_open()
         start_time = time.time()
         connection = self.create_connection()
@@ -79,14 +80,21 @@ class Root():
                    ]
         try: 
             with connection.cursor() as cursor:
-                self.logger.info("Creating Users")
-                #Specifically execute create user query so that password is not logged. 
-                cursor.execute(f"CREATE USER IF NOT EXISTS 'View_User'@'%' IDENTIFIED BY '{self.view_user_password}';")
-                self.logger.debug("CREATE USER IF NOT EXISTS 'View_User'@'%' IDENTIFIED BY 'view_user_password';")
-                for query in queries: #Loops through queries and executes one at a time. 
-                     self.logger.debug(f"{query}")
-                     cursor.execute(query)
-                connection.commit
+                self.logger.info(f"Checking if user {self.view_user} exist")
+                cursor.execute(f"SELECT user FROM mysql.user WHERE user = '{self.view_user}';")
+                users = cursor.fetchall()
+                self.logger.query(f"SELECT user FROM mysql.user WHERE user = '{self.view_user}';", users)
+                if len(users) == 1:
+                    self.logger.info("Users already exist")
+                else:
+                    self.logger.info("Creating Users")
+                    #Specifically execute create user query so that password is not logged. 
+                    cursor.execute(f"CREATE USER IF NOT EXISTS 'View_User'@'%' IDENTIFIED BY '{self.view_user_password}';")
+                    self.logger.debug("CREATE USER IF NOT EXISTS 'View_User'@'%' IDENTIFIED BY 'view_user_password';")
+                    for query in queries: #Loops through queries and executes one at a time. 
+                        self.logger.debug(f"{query}")
+                        cursor.execute(query)
+                    connection.commit
         except pymysql.MySQLError as e:
                 self.logger.error(f"Was not able to create users: {e}")
         finally:
@@ -94,3 +102,31 @@ class Root():
              connection.close()
              end_time = time.time() - start_time
              self.logger.con_close(end_time)
+
+    def create_test_data(self): # DO NOT USE IN PROD - Function used to fill database with test data. 
+        self.logger.con_open()
+        start_time = time.time()
+        connection = self.create_connection()
+        cursor = connection.cursor()
+        query = "select * from `category`;"
+        test_data = "Call test_data()"
+        try:
+            with connection.cursor() as cursor:
+                self.logger.info("Testing if there is already data")
+                cursor.execute(query)
+                result = cursor.fetchall()
+                self.logger.query(query, result)
+                if len(result) == 0:
+                    self.logger.info("Creating test data")
+                    cursor.execute(test_data)
+                    self.logger.debug(test_data)
+                else:
+                    self.logger.info("Database already has data")
+        except pymysql.MySQLError as e:
+            self.logger.error(f"Was not able to add test data: {e}")
+        finally:
+            cursor.close()
+            connection.close()
+            end_time = time.time() - start_time
+            self.logger.con_close(end_time)
+
