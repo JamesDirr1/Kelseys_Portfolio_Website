@@ -67,8 +67,8 @@ BEGIN
 
 	INSERT INTO image (image_title, image_desc, image_URL, image_weight, project_id) VALUES
 	('Dreamy Apothecary', null, 'https://static.wixstatic.com/media/0fee66_66b717693fc445f6a81ed9cb6be1df90~mv2.jpg/v1/fit/w_1544,h_1420,q_90/0fee66_66b717693fc445f6a81ed9cb6be1df90~mv2.webp', 1, 1),
-	('Twitch Commission', 'Witch sitting on a mushroom drinking tea with her cat', 'https://static.wixstatic.com/media/0fee66_0e33a207…/0fee66_0e33a20771a34816b0cc496f13fd139f~mv2.webp', 2, 2),
-	('Mushroom Forest', 'A Mushroom village in dark forest', 'https://static.wixstatic.com/media/0fee66_0e33a20771a34816b0cc496f13fd139f~mv2.jpeg/v1/fit/w_1544,h_1420,q_90/0fee66_0e33a20771a34816b0cc496f13fd139f~mv2.webp', 1, 3),
+	('Twitch Commission', 'Witch sitting on a mushroom drinking tea with her cat', 'https://static.wixstatic.com/media/0fee66_0e33a20771a34816b0cc496f13fd139f~mv2.jpeg/v1/fit/w_1544,h_1420,q_90/0fee66_0e33a20771a34816b0cc496f13fd139f~mv2.webp', 2, 2),
+	('Mushroom Forest', 'A Mushroom village in dark forest', 'https://static.wixstatic.com/media/0fee66_712108752e9c4813a75d378c02e59e74~mv2.jpg/v1/fit/w_2250,h_1278,q_90/0fee66_712108752e9c4813a75d378c02e59e74~mv2.webp', 1, 3),
 	('Reese\'s ad', null, 'https://static.wixstatic.com/media/0fee66_f30654123c914ab9909e1e93fc0dbbac~mv2.jpg/v1/fit/w_1544,h_1420,q_90/0fee66_f30654123c914ab9909e1e93fc0dbbac~mv2.webp', 1, 4),
 	('Cryptid Cookies Full Box 1', 'Full box render for Cryptid Cookies', 'https://static.wixstatic.com/media/0fee66_86d3cc90528c453abd289b93367ef42c~mv2.jpg/v1/fit/w_1544,h_1420,q_90/0fee66_86d3cc90528c453abd289b93367ef42c~mv2.webp', 1, 5),
 	('Cryptid Cookies Full Box 2', 'Full box render for Cryptid Cookies', 'https://static.wixstatic.com/media/0fee66_60e0a4fdd92b4b9bb9431bcc9d7a454d~mv2.jpg/v1/fit/w_1126,h_1035,q_90/0fee66_60e0a4fdd92b4b9bb9431bcc9d7a454d~mv2.webp', 3, 5),
@@ -88,6 +88,9 @@ BEGIN
 	('Medium Ghost page 2', null, 'https://static.wixstatic.com/media/0fee66_b166cfb214a14ef4ac6d754ff041eb45~mv2.jpg/v1/fill/w_746,h_1043,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0fee66_b166cfb214a14ef4ac6d754ff041eb45~mv2.jpg', 2, 9),
 	('Medium Ghost page 3', null, 'https://static.wixstatic.com/media/0fee66_c73c9e842eec44d699ff0e892a62661a~mv2.jpg/v1/fill/w_746,h_1043,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/0fee66_c73c9e842eec44d699ff0e892a62661a~mv2.jpg', 3, 9);
 
+	UPDATE project
+	SET project_image_id = 1
+	WHERE project_id = 1;
 
 	UPDATE project
 	SET project_image_id = 2

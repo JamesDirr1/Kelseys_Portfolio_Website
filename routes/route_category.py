@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, flash, abort
+from flask import Blueprint, jsonify, flash, abort, render_template
 from utility_classes import custom_logger
 import time, logging
 from mysql_connections import mysql_view_user 
@@ -66,12 +66,12 @@ def display_category_projects(url_category):
     
     projects = view_user.get_projects_by_category(current_category.category_id, False) #Gets list of projects per the current category
 
-    project_list = [asdict(create_project(p)) for p in projects] #Creates projects form the results
+    project_list = []
+    for p in projects: #Creates projects form the results
+        project_list.append(create_project(p))
    
-    results = {
-        "Categories": categories_list,
-        url_category: project_list
-    }
+    for project in project_list:
+        logger.info(project.project_image.image_url)
   
-    return(jsonify(results))
+    return render_template("category.html", project_list = project_list)
 
