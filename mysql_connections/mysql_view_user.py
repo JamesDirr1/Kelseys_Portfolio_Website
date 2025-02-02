@@ -70,20 +70,20 @@ class View_User():
     def get_projects_by_category(self, id, sort):#Function that attempts to query the database to get a list of projects for a specific category by ID
         if sort:
             self.logger.info(f"getting all projects from category {id} - Sorted")
-            query = f"SELECT * FROM Portfolio.`VV.project` WHERE category_id = {id} ORDER BY project_date ASC;"
+            query = f"Select * from `VV.project` as project left join `VV.image` as image on project.project_image_id = image.image_id WHERE category_id = {id} ORDER BY project_date ASC;"
         else: 
             self.logger.info(f"getting all projects from category {id}")
-            query = f"SELECT * FROM Portfolio.`VV.project` WHERE category_id = {id};"
+            query = f"Select * from `VV.project` as project left join `VV.image` as image on project.project_image_id = image.image_id WHERE category_id = {id};"
         results = self.fetch_all(query)
         return (results)
     
     def get_projects_by_category_title(self, title, sort):#Function that attempts to query the database to get a list of projects for a specific category by title
         if sort:
             self.logger.info(f"getting all projects from category {title} - Sorted")
-            query = f"SELECT * FROM Portfolio.`VV.project` WHERE category_title = {title} ORDER BY project_date ASC;"
+            query = f"Select * from `VV.project` as project left join `VV.image` as image on project.project_image_id = image.image_id; WHERE category_title = {title} ORDER BY project_date ASC;"
         else: 
             self.logger.info(f"getting all projects from category {title}")
-            query = f"SELECT * FROM Portfolio.`VV.project` WHERE category_title = {title};"
+            query = f"Select * from `VV.project` as project left join `VV.image` as image on project.project_image_id = image.image_id; WHERE category_title = {title};"
         results = self.fetch_all(query)
         return (results)
     
