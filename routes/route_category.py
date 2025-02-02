@@ -54,14 +54,14 @@ def display_category_projects(url_category):
 
     if len(categories_list) == 0: #Checks if there is any categories in the database, throws 404 error if not
         logger.error("Trying to access categories when none exists")
-        flash("No categories exists")
+        flash("No categories exists", "error")
         abort(404)
     
     current_category = get_category_by_title(categories_list, url_category) #Checks if the provide url category exists
 
     if not current_category: #if the proved url does not exist throws 404
         logger.error(f"Category {url_category} not found")
-        flash(f"Category {url_category} not found")
+        flash(f"Category {url_category} not found", "error" )
         abort(404)
     
     projects = view_user.get_projects_by_category(current_category.category_id, False) #Gets list of projects per the current category

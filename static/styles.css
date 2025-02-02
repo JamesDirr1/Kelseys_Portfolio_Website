@@ -1,0 +1,139 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body Styles */
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #f2f2f2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header Styles */
+header {
+    text-align: center;
+    padding: 20px;
+    background-color: #fff;
+}
+
+/* Logo Image */
+header img {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 20px; /* Adds space below the logo */
+}
+
+/* Heading */
+header h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+/* Navigation Bar Styles */
+nav ul {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* Space between buttons */
+}
+
+nav ul li {
+    display: inline;
+}
+
+nav ul li a {
+    text-decoration: none;
+    padding: 10px 20px;
+    background-color: #4CAF50; /* Green background */
+    color: white;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    transition: background-color 0.3s;
+}
+
+nav ul li a:hover {
+    background-color: #45a049; /* Darker green on hover */
+}
+
+/* Content Styles */
+.content {
+    padding: 20px;
+    text-align: center;
+    flex: 1;
+}
+
+/* Flash message container */
+.flash-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+/* Base Flash Message Styles */
+.flash-message {
+    padding: 15px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    margin-bottom: 10px;
+    opacity: 1;
+    transition: opacity 1s ease-in-out;
+}
+
+/* Flash message categories */
+.flash-message.success {
+    background-color: #4CAF50; /* Green */
+}
+
+.flash-message.error {
+    background-color: #F44336; /* Red */
+}
+
+.flash-message.info {
+    background-color: #2196F3; /* Blue */
+}
+
+.flash-message.warning {
+    background-color: #FF9800; /* Orange */
+}
+
+/* Fade-out animation */
+.fade-out {
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+
+footer {
+    background-color: #c5c5c5;  /* Dark background */
+    color: white;  /* Light text */
+    text-align: center;
+    padding: 20px 10px;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    margin-top: 40px;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+footer a {
+    color: #49befc;  /* Orange links */
+    text-decoration: none;
+    font-weight: bold;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
