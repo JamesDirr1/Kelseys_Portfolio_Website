@@ -1,15 +1,17 @@
 from flask import Flask, request, redirect
-import time, logging
+import time, logging, os
 from mysql_connections.mysql_root import Root
 from utility_classes import custom_logger
 from routes.route_category import category_routes
 from routes.route_project import project_routes
 from routes.route_image import image_routes
+from dotenv import load_dotenv
 
  
 app = Flask(__name__)
 
-app.secret_key = 'your-secret-key' 
+load_dotenv
+app.secret_key = os.getenv("FLASK_KEY")
 
 def app_start_up(): #Function that handles anything that need to be setup before handling any request.
     logger.info("---- APP STARTING ----")

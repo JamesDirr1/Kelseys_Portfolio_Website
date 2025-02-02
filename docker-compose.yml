@@ -19,6 +19,7 @@ services:
       MYSQL_VIEW_USER: ${MYSQL_VIEW_USER}
       MYSQL_VIEW_USER_PASSWORD: ${MYSQL_VIEW_USER_PASSWORD}
       MYSQL_DB: ${MYSQL_DB}
+      FLASK_KEY: ${FLASK_KEY}
 
   my-mysql:
     image: mysql:5.7  
