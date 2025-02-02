@@ -1,15 +1,17 @@
-import data_classes
+from dataclasses import dataclass
 from typing import Optional
 from datetime import date
+from data_classes.image import Image
 
 #Data class that represents the columns from the project table.
 
 
-@data_classes
-class project:
-    project_id: Optional[int] = None
+@dataclass
+class Project:
     project_title: str
-    project_date: date = date.today()
-    project_desc: Optional[str] = None
+    project_image: Image
     project_image_id: Optional[int] = None
+    project_date: date = date.today()
+    project_id: Optional[int] = None
+    project_desc: Optional[str] = None
     category_id: Optional[int] = None

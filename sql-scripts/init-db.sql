@@ -31,7 +31,7 @@ CREATE or Replace view `VV.category` AS
     FROM category;
 
 CREATE or Replace view `VV.project` AS
-    SELECT project_id, project_date, project_desc, project.category_id, project_image_id
+    SELECT project_id, project_title, project_date, project_desc, project.category_id, project_image_id
     FROM project;
 
 CREATE or Replace view `VV.image` AS
