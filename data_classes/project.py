@@ -9,7 +9,7 @@ from data_classes.image import Image
 @dataclass
 class Project:
     project_title: str
-    project_image: Image
+    project_image: Optional[Image] = None
     project_image_id: Optional[int] = None
     project_date: date = date.today()
     project_id: Optional[int] = None

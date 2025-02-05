@@ -93,6 +93,12 @@ class View_User():
         results = self.fetch_all(query)
         return (results)
     
+    def get_project_by_title(self, project, category ):#Function that attempts to query the database to get specific project by title
+        self.logger.info(f"getting project:{project}  from category:{category}")
+        query = f"SELECT * FROM `VV.project` AS project LEFT JOIN `VV.category` AS category ON category.category_id = project.category_id WHERE category.category_title LIKE '{category}' AND project_title LIKE '{project}'"
+        results = self.fetch_all(query)
+        return (results)
+    
     def get_all_images(self):#Function that attempts to query the database to get list of all images
         self.logger.info("getting all images")
         query = "SELECT * FROM Portfolio.`VV.image`;"

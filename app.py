@@ -8,6 +8,7 @@ from routes.route_project import project_routes
 from routes.route_image import image_routes
 from dotenv import load_dotenv
 from data_classes.category import Category
+from werkzeug.routing import BaseConverter
 
  
 app = Flask(__name__)
@@ -15,8 +16,17 @@ app = Flask(__name__)
 load_dotenv
 app.secret_key = os.getenv("FLASK_KEY")
 
+class HyphenConverter(BaseConverter): #Converts space characters to hyphens and hymens to spaces in urls.
+    def to_python(self, value):
+        return value.replace('-', ' ')
+    
+    def to_url(self, value):
+        return value.replace(' ', '-')
+
 def app_start_up(): #Function that handles anything that need to be setup before handling any request.
     logger.info("---- APP STARTING ----")
+
+    app.url_map.converters['hyphen'] = HyphenConverter
     
     logger.register("category_routes")
     app.register_blueprint(category_routes)

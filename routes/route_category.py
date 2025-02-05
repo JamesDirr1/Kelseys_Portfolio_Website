@@ -1,6 +1,5 @@
 from flask import Blueprint, jsonify, flash, abort, render_template
 from utility_classes import custom_logger
-import time, logging
 from mysql_connections import mysql_view_user 
 from data_classes.category import Category
 from data_classes.project import Project
@@ -40,7 +39,7 @@ def create_image_from_project(project): #Function that builds image object
                               project_id = project["project_id"])
     return project_image
 
-@category_routes.route('/portfolio/<string:url_category>')
+@category_routes.route('/portfolio/<hyphen:url_category>')
 def display_category_projects(url_category):
     url_category = escape(url_category) #Escape url variable
 
