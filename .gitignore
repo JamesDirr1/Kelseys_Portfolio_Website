@@ -3,3 +3,5 @@
 .vscode
 .vscode/settings.json
 /.vscode
+mysql_connections/__pycache__/__init__.cpython-311.pyc
+__pycache__

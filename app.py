@@ -40,7 +40,6 @@ def app_start_up(): #Function that handles anything that need to be setup before
         else:
             time.sleep(5)
 
-
     try:
         Root_user.create_users() #Creates users for the database that will be used later in the app.
     except Exception as e: 
