@@ -9,23 +9,16 @@
         "Hi! I'm Kelsey Spade, a soon-to-graduate student from the Columbus College of Art & Design. My portfolio showcases my love for illustration, graphic design, and comics. Check out my creative journey, featuring unique projects that mix storytelling and design. Let's connect!"/>
         <link rel="icon" href="https://static.wixstatic.com/media/0fee66_18f00ad0221142dfbd4c21f7e54d425f~mv2.png/v1/fill/w_549,h_289,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Kelsey_Spade_Header.png" type="image/x-icon">
         <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-        <script src="{{ url_for('static', filename='scripts.js') }}"></script>
-
-        
     </head>
     <body>
         <header>
-            <div class="header-container">
                 <img src="https://static.wixstatic.com/media/0fee66_18f00ad0221142dfbd4c21f7e54d425f~mv2.png/v1/fill/w_549,h_289,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Kelsey_Spade_Header.png" alt="Kelsey Spade's Butterfly-Spade Logo">
                 <h1>Illustration and Design</h1>
                 <nav>
-                    <ul>
-                        {% for category in categories %}
-                            <li><a href="{{ url_for('category.display_category_projects', url_category=category.category_title.lower()) }}">{{ category.category_title }}</a></li>
-                        {% endfor %}
-                    </ul>
+                    {% for category in categories %}
+                    <a class= nav-button href="{{ url_for('category.display_category_projects', url_category=category.category_title.lower()) }}">{{ category.category_title }}</a>
+                    {% endfor %}
                 </nav>
-            </div>
         </header>
         <div class="flash-container">
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -39,7 +32,9 @@
 
         {% if error_message %}
             <div class="error-message">
-                <p>{{ error_message }}</p>
+                <h2>{{ error_message }}</h2>
+                <p>Looks like something went wrong! Please click the button below to go back home or try again later</p>
+                <a class= nav-button href="/">Home</a>
             </div>
         {% endif %}
 
@@ -47,17 +42,19 @@
         <div class="content">
             {% block content %}{% endblock %}
         </div>
-        <footer>
-            <div class="footer-container">
-                <p>&copy; 2025 Kelsey Spade. All Rights Reserved.</p>
-                <p>Follow me on: 
-                    <a href="https://www.instagram.com/alizakelp/" target="_blank">Instagram</a> | 
-                    <a href="http://www.linkedin.com/in/kelsey-spade-571472267" target="_blank">linkedin</a> |
-                    <a href="https://www.etsy.com/shop/KelppiesCreations?ref=l2-about-shopname" target="_blank">Etsy</a>|
-                    <a href="https://www.youtube.com/channel/UCTNsW-D89TqSKNdoX8tqHCg" target="_blank">Youtube</a>
-                </p>
-            </div>
-        </footer>
-    
+
+        <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+        <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
     </body>
+    <footer>
+        <div class="footer-container">
+            <p>&copy; 2025 Kelsey Spade. All Rights Reserved.</p>
+            <p>Follow me on: 
+                <a href="https://www.instagram.com/alizakelp/" target="_blank">Instagram</a> | 
+                <a href="http://www.linkedin.com/in/kelsey-spade-571472267" target="_blank">linkedin</a> |
+                <a href="https://www.etsy.com/shop/KelppiesCreations?ref=l2-about-shopname" target="_blank">Etsy</a>|
+                <a href="https://www.youtube.com/channel/UCTNsW-D89TqSKNdoX8tqHCg" target="_blank">Youtube</a>
+            </p>
+        </div>
+    </footer>
 </html>

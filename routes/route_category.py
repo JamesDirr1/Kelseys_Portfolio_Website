@@ -64,6 +64,8 @@ def display_category_projects(url_category):
         flash(f"Category {url_category} not found", "error" )
         abort(404)
     
+    flash("Welcome!", "success")
+    
     projects = view_user.get_projects_by_category(current_category.category_id, False) #Gets list of projects per the current category
 
     project_list = []

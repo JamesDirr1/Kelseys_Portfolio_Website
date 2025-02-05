@@ -31,11 +31,15 @@ def app_start_up(): #Function that handles anything that need to be setup before
     logger.info("Checking if database is ready")
     connection = False 
     while connection == False: #Loops every 30 seconds and uses Root_user to try to connect to the database and make sure its ready to go.
-        time.sleep(5)
         try: 
             connection = Root_user.try_connection()
         except Exception as e:
             logger.error(f"----Could not connect to the database----\n {e}")
+        if connection:
+            break
+        else:
+            time.sleep(5)
+
 
     try:
         Root_user.create_users() #Creates users for the database that will be used later in the app.
@@ -57,7 +61,7 @@ def category_list():
     return (cat_list)
 
 with app.app_context():
-    logging.basicConfig(level="DEBUG", format=f'%(asctime)s %(levelname)-8s| %(message)s')
+    logging.basicConfig(level="INFO", format=f'%(asctime)s %(levelname)-8s| %(message)s')
     logger = custom_logger.log("MAIN")
     app_start_up() #initializes application
 
