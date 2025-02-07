@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect
+from flask import Flask, request, redirect, flash, abort
 import time, logging, os
 from mysql_connections.mysql_root import Root
 from mysql_connections.mysql_view_user import View_User
@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from data_classes.category import Category
 from werkzeug.routing import BaseConverter
 
+
  
 app = Flask(__name__)
 
@@ -18,10 +19,12 @@ app.secret_key = os.getenv("FLASK_KEY")
 
 class HyphenConverter(BaseConverter): #Converts space characters to hyphens and hymens to spaces in urls.
     def to_python(self, value):
-        return value.replace('-', ' ')
+        value = value.replace('_', ' ')
+        return value
     
     def to_url(self, value):
-        return value.replace(' ', '-')
+        value = value.replace(' ', '_')
+        return value
 
 def app_start_up(): #Function that handles anything that need to be setup before handling any request.
     logger.info("---- APP STARTING ----")
@@ -29,11 +32,11 @@ def app_start_up(): #Function that handles anything that need to be setup before
     app.url_map.converters['hyphen'] = HyphenConverter
     
     logger.register("category_routes")
-    app.register_blueprint(category_routes)
+    app.register_blueprint(category_routes, url_prefix='/portfolio')
     logger.register("project_routes")
-    app.register_blueprint(project_routes)
+    app.register_blueprint(project_routes, url_prefix='/portfolio')
     logger.register("image_routes")
-    app.register_blueprint(image_routes)
+    app.register_blueprint(image_routes, url_prefix='/portfolio')
 
     Root_user= Root() #Creates MYSQL Root user
     logger.info("Root user created")
@@ -63,7 +66,6 @@ def app_start_up(): #Function that handles anything that need to be setup before
 def category_list():
     view_user = View_User()
     cat_list = view_user.get_all_categories()
-    cat_list = [Category(**item) for item in cat_list]
     cat_total = len(cat_list)
     cat_list.append(Category("About", 0, cat_total + 1))
     logger.debug(f"Category list: {cat_list}")
@@ -89,7 +91,11 @@ def log_request():
 @app.route('/')
 def index():
     logger.visit("Home")
-    categories = category_list()
+    categories = category_list()    
+    if len(categories) == 0: #Checks if there is any categories in the database, throws 404 error if not
+        logger.error("Trying to access categories when none exists")
+        flash("No categories exists", "error")
+        abort(404)
     main_category = min(categories, key=lambda cat: cat.category_order)
     url = main_category.category_title
     logger.redirect(f"/portfolio/{url}")

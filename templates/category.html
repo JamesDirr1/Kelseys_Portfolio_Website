@@ -2,10 +2,12 @@
 
 {% block content %}
 <div class="project-container">
-    {% for project in project_list %}
+    {% for project in projects %}
         <div class="gallery">
-            <img class="project-image" src="{{ project.project_image.image_url }}" alt="{{ project.project_title }} image">
-            <div class="project-title">{{ project.project_title }}</div>
+            <a href="{{url_for('project.display_project_images', url_category=category.category_title, url_project=project.project_title) }}">
+                <img class="project-image" src="{{ project.project_image.image_url }}" alt="{{ project.project_title }} image">
+                <div class="project-title">{{ project.project_title }}</div>
+            </a>
         </div>
     {% endfor %}
 </div>
