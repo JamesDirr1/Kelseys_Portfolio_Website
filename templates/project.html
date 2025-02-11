@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="project-container">
+    <div class="h3">{{project.project_title}}</div>
+    {% for image in images %}
+        <div class="image-card">
+            <a href="{{ current_url ~ image.image_id|string}}">
+                <img class="image" src="{{ image.image_url }}" alt="{{ image.desc }} image">
+                <div class="image-title">{{ image.image_title }}</div>
+            </a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
