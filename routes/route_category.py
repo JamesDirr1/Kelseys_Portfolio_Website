@@ -16,9 +16,8 @@ category_routes = Blueprint('category', __name__)
 def decode(string):
     return(string.replace("_", "'"))
 
-@category_routes.route('/portfolio/<hyphen:url_category>')
+@category_routes.route('<hyphen:url_category>')
 def display_category_projects(url_category):
-    url_category = decode(url_category)
     logger = custom_logger.log("CATEGORY") #Build Logger
     logger.info(f"User visited {url_category}")
 
