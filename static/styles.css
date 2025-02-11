@@ -75,7 +75,7 @@ header nav {
     flex: 1;
 }
 
-.project-container {
+.category-container {
 	display: grid;
 	grid-gap: 10px;
 	grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
@@ -133,7 +133,7 @@ header nav {
 }
 
 @media only screen and (max-width: 1000px) {
-    .project-container{
+    .category-container{
         grid-template-columns: 1fr 1fr;
     }
     .gallery {
@@ -154,7 +154,7 @@ header nav {
 }
   
 @media only screen and (max-width: 600px) {
-    .project-container{
+    .category-container{
         grid-template-columns: 1fr;
     }
     .gallery {

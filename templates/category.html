@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="project-container">
+<div class="category-container">
     {% for project in projects %}
         <div class="gallery">
             <a href="{{url_for('project.display_project_images', url_category=category.category_title, url_project=project.project_title) }}">

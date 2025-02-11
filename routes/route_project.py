@@ -32,9 +32,5 @@ def display_project_images(url_category, url_project):
 
     images = view_user.get_project_images(project.project_id)
 
-    result = {"Project" : project,
-              "Images" : images
-    }
-    
-
-    return(jsonify(result))
+ 
+    return render_template("project.html", project = project, images = images)
