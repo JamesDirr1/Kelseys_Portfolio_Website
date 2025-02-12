@@ -1,6 +1,6 @@
 from flask import Flask, request, redirect, flash, abort
 import time, logging, os
-from mysql_connections.mysql_root import Root
+from mysql_connections.mysql_Root import Root
 from mysql_connections.mysql_view_user import View_User
 from utility_classes import custom_logger
 from routes.route_category import category_routes
