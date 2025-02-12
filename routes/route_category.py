@@ -21,6 +21,12 @@ def display_category_projects(url_category):
     logger = custom_logger.log("CATEGORY") #Build Logger
     logger.info(f"User visited {url_category}")
 
+    about = "about"
+
+    if url_category.lower() ==  about:
+        flash("Welcome!", "success" )
+        return render_template("about.html")
+
     view_user = mysql_view_user.View_User() #Build view user
     
     current_category = view_user.get_category_by_title(url_category) #Checks if the provide url category exists
