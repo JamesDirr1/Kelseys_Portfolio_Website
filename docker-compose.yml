@@ -19,6 +19,7 @@ services:
       MYSQL_VIEW_USER: ${MYSQL_VIEW_USER}
       MYSQL_VIEW_USER_PASSWORD: ${MYSQL_VIEW_USER_PASSWORD}
       MYSQL_DB: ${MYSQL_DB}
+      FLASK_KEY: ${FLASK_KEY}
 
   my-mysql:
     image: mysql:5.7  
@@ -33,6 +34,8 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
       - ./sql-scripts:/docker-entrypoint-initdb.d  
+      - ./config/mysql:/etc/mysql/conf.d
+    command: [ "sh", "-c", "chown -R mysql:mysql /etc/mysql/conf.d && chmod 644 /etc/mysql/conf.d/my.cnf && docker-entrypoint.sh mysqld" ]
 
 volumes:
   mysql-data:

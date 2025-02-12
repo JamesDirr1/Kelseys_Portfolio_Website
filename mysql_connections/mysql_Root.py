@@ -1,16 +1,13 @@
-import pymysql
+import pymysql, time, os, utility_classes.custom_logger
 from pymysql.cursors import DictCursor
 from dotenv import load_dotenv
-import os
-from flask import current_app
 
-#MySQL class that acts as the Root user for executing MYSQL querries that require root level premisons.
+#MySQL class that acts as the Root user for executing MYSQL queries that require root level permissions.
 #This should only be called when needed.
-#Uses PyMySQL to execure querries. 
+#Uses PyMySQL to execute queries. 
 
 class Root():
-    def __init__(self):
-        #Load .env file and set variables need to connect to the mysql database as the root user. 
+    def __init__(self): #Load .env file and set variables need to connect to the mysql database as the root user. 
         load_dotenv()
         self.host = os.getenv('MYSQL_HOST')
         self.port = int(os.getenv('MYSQL_PORT', 3306))
@@ -19,9 +16,10 @@ class Root():
         self.db = os.getenv('MYSQL_DB')
         self.view_user = os.getenv('MYSQL_VIEW_USER')
         self.view_user_password = os.getenv('MYSQL_VIEW_USER_PASSWORD')
+        self.logger = utility_classes.custom_logger.log("ROOT")
 
     def create_connection(self): #Function that creates a PyMySQL connection using the variables outlined above
-        current_app.logger.info("<ROOT> Connection created")
+        self.logger.info("Connection created")
         connection = pymysql.connect(
             host=self.host,
             port=self.port,
@@ -32,43 +30,46 @@ class Root():
         )
         return connection
     
-    def try_connection(self): #Function that attempts to conenct to the database to ensure that it is ready to go.
+    def try_connection(self): #Function that attempts to connect to the database to ensure that it is ready to go.
         status = False
         #Set of table names ---Needs Updated if more tables are added---
         need_tables = {'VV.category', 'VV.image',
                        'VV.project', 'category',
                         'image', 'project'}
         
-        current_app.logger.info("<ROOT> Testing connections to the database")
-        current_app.logger.info("<ROOT> Connectionn Opening")
+        self.logger.info("Testing connection to database")
+        start_time = time.time()
+        self.logger.con_open()
         connection = self.create_connection()
         cursor = connection.cursor()
         try:
             with connection.cursor() as cursor:
-                current_app.logger.debug("Show tables;") 
                 cursor.execute("Show tables;") #Query the database for a list of all tables.
                 tables = cursor.fetchall()
+                self.logger.query("Show tables;", f"{tables}")
                 current_tables = {table['Tables_in_Portfolio'] for table in tables} #Turns result into a set of tables.
-                current_app.logger.debug(f"<ROOT> Tables: {current_tables}")
                 table_dif = need_tables - current_tables #Subtracts the tables in the currently in the database.
-                current_app.logger.debug(f"<ROOT> DIFF: {table_dif}")
-                if len(table_dif) == 0: #Checks if the length of the results of the diffrents in table sets. 
+                self.logger.debug(f"Table Diff: {table_dif}")
+                if len(table_dif) == 0: #Checks if the length of the results of the differences in table sets. 
                     status = True
-                    current_app.logger.info("<ROOT> All tables are in the database")
+                    self.logger.info("All tables have been created - Database is ready")
                 else:
-                    current_app.logger.error(f"<ROOT> Tables do not match. Missing tables: {table_dif}")
+                    self.logger.error(f"Tables do not match. Missing tables: {table_dif}")
         except pymysql.MySQLError as e:
-            current_app.logger.error(f"<ROOT> Unable to connect to server: {e}")
+            self.logger.error(f"Unable to connect to server: {e}")
         finally:
             cursor.close()
             connection.close()
-            current_app.logger.info("<Root> Connection to the database closing")
+            end_time = time.time() - start_time
+            self.logger.con_close(end_time)
             return(status) #Returns status True if all tables made, false other wise. 
 
 
 
     def create_users(self): #Function that creates any other users need in the database. 
-        current_app.logger.info("<ROOT> Connection to DB Starting")
+        self.logger.info("Creating users")
+        self.logger.con_open()
+        start_time = time.time()
         connection = self.create_connection()
         cursor = connection.cursor()
         queries = [ #List of queries that need executed when making the users.
@@ -79,17 +80,55 @@ class Root():
                    ]
         try: 
             with connection.cursor() as cursor:
-                current_app.logger.info(f"<ROOT> Createing Users")
-                #Specficaly execute create user queery so that password is not logged. 
-                cursor.execute(f"CREATE USER IF NOT EXISTS 'View_User'@'%' IDENTIFIED BY '{self.view_user_password}';")
-                current_app.logger.debug("<ROOT> CREATE USER IF NOT EXISTS 'View_User'@'%' IDENTIFIED BY 'view_user_password';")
-                for query in queries: #Loops through querries and excutes one at a time. 
-                     current_app.logger.debug(f"<ROOT> {query}")
-                     cursor.execute(query)
-                connection.commit
+                self.logger.info(f"Checking if user {self.view_user} exist")
+                cursor.execute(f"SELECT user FROM mysql.user WHERE user = '{self.view_user}';")
+                users = cursor.fetchall()
+                self.logger.query(f"SELECT user FROM mysql.user WHERE user = '{self.view_user}';", users)
+                if len(users) == 1:
+                    self.logger.info("Users already exist")
+                else:
+                    self.logger.info("Creating Users")
+                    #Specifically execute create user query so that password is not logged. 
+                    cursor.execute(f"CREATE USER IF NOT EXISTS 'View_User'@'%' IDENTIFIED BY '{self.view_user_password}';")
+                    self.logger.debug("CREATE USER IF NOT EXISTS 'View_User'@'%' IDENTIFIED BY 'view_user_password';")
+                    for query in queries: #Loops through queries and executes one at a time. 
+                        self.logger.debug(f"{query}")
+                        cursor.execute(query)
+                    connection.commit
         except pymysql.MySQLError as e:
-                current_app.logger.error(f"<ROOT> Was not able to create users: {e}")
+                self.logger.error(f"Was not able to create users: {e}")
         finally:
-             current_app.logger.info("<ROOT> Conneciton to DB CLOSING")
              cursor.close()
              connection.close()
+             end_time = time.time() - start_time
+             self.logger.con_close(end_time)
+
+    def create_test_data(self): # DO NOT USE IN PROD - Function used to fill database with test data. 
+        self.logger.con_open()
+        start_time = time.time()
+        connection = self.create_connection()
+        cursor = connection.cursor()
+        query = "select * from `category`;"
+        test_data = "Call clear_data(); Call test_data();"
+        try:
+            with connection.cursor() as cursor:
+                self.logger.info("Testing if there is already data")
+                cursor.execute(query)
+                result = cursor.fetchall()
+                self.logger.query(query, result)
+                if len(result) == 0: #Check if there is any data already in the database
+                    self.logger.info("Creating test data") 
+                    cursor.execute("Call clear_data();")
+                    cursor.execute("Call test_data();")
+                    connection.commit()
+                    self.logger.debug(test_data)
+                else:
+                    self.logger.info("Database already has data")
+        except pymysql.MySQLError as e:
+            self.logger.error(f"Was not able to add test data: {e}")
+        finally:
+            cursor.close()
+            connection.close()
+            end_time = time.time() - start_time
+            self.logger.con_close(end_time)
+
