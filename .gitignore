@@ -1,7 +1,6 @@
 
 .env
 .vscode
+.venv
 .vscode/settings.json
-/.vscode
-__pycache__
-.idea
+.coverage

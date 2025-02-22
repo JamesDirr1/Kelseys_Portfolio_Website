@@ -13,13 +13,11 @@ import urllib
  
 category_routes = Blueprint('category', __name__)
 
-def decode(string):
-    return(string.replace("_", "'"))
-
 @category_routes.route('<hyphen:url_category>')
 def display_category_projects(url_category):
     logger = custom_logger.log("CATEGORY") #Build Logger
     logger.info(f"User visited {url_category}")
+    print(url_category)
 
     about = "about"
 
@@ -37,6 +35,7 @@ def display_category_projects(url_category):
         abort(404)
 
     flash("Welcome!", "success")
+
     
     projects = view_user.get_projects_by_category(current_category.category_id, False) #Gets list of projects per the current category
 

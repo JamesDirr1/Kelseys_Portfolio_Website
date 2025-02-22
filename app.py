@@ -14,7 +14,7 @@ from werkzeug.routing import BaseConverter
  
 app = Flask(__name__)
 
-load_dotenv
+load_dotenv(override=True)
 app.secret_key = os.getenv("FLASK_KEY")
 
 class HyphenConverter(BaseConverter): #Converts space characters to hyphens and hymens to spaces in urls.
@@ -38,20 +38,29 @@ def app_start_up(): #Function that handles anything that need to be setup before
     logger.register("image_routes")
     app.register_blueprint(image_routes, url_prefix='/portfolio')
 
+def database_setup():
+    logger.info("---- Database Setup ----")
     Root_user= Root() #Creates MYSQL Root user
     logger.info("Root user created")
-
     logger.info("Checking if database is ready")
     connection = False 
+    print("start")
     while connection == False: #Loops every 30 seconds and uses Root_user to try to connect to the database and make sure its ready to go.
         try: 
             connection = Root_user.try_connection()
+            print(f"Connection = {connection}")
         except Exception as e:
+            print("exception")
+            print(f"----Could not connect to the database----\n {e}")
             logger.error(f"----Could not connect to the database----\n {e}")
         if connection:
-            break
+           print("breaking")
+           break
         else:
-            time.sleep(5)
+           print("sleeping")
+           time.sleep(5)
+    logger.info("---- Connection established ----")
+    print("end")
 
     try:
         Root_user.create_users() #Creates users for the database that will be used later in the app.
@@ -61,7 +70,7 @@ def app_start_up(): #Function that handles anything that need to be setup before
     try:
         Root_user.create_test_data()
     except Exception as e:
-        logger.debug(f"Could not create test user: {e}")
+        logger.debug(f"Could not create test data: {e}")
 
 def category_list():
     view_user = View_User()
@@ -72,12 +81,18 @@ def category_list():
     return (cat_list)
 
 with app.app_context():
+    level = os.getenv("FLASK_Log")
     logging.basicConfig(level="INFO", format=f'%(asctime)s %(levelname)-8s| %(message)s')
     logger = custom_logger.log("MAIN")
     app_start_up() #initializes application
+    env = os.getenv("Flask_environment")
+    print(env)
+    if env != "Test":
+        database_setup()
 
 @app.context_processor
 def get_navbar():
+    print("navbar")
     logger.info("Getting categories for nav bar")
     categories = category_list()
     return dict(categories = categories)
@@ -100,6 +115,12 @@ def index():
     url = main_category.category_title
     logger.redirect(f"/portfolio/{url}")
     return redirect(f'/portfolio/{url}')
+
+@app.route('/error')
+def error_route():
+    logger.error("AN ERROR HAS OCCURRED")
+    flash("AN ERROR HAS OCCURRED", "error" )
+    abort(500)
 
 
 @app.after_request
