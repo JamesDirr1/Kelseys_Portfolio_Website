@@ -17,7 +17,7 @@ def test_category_create():
     assert cat.category_id == 1
     assert cat.category_order == 2
 
-def test_category_create_title():
+def test_category_create_with_defaults():
     cat = Category("Title")
     assert cat.category_title == "Title"
     assert cat.category_id == None
@@ -25,22 +25,22 @@ def test_category_create_title():
 
 def test_category_hyphen_converter(test_category_client_and_mocks):
     client, mock_view_user= test_category_client_and_mocks
-    mock_view_user.get_all_categories.return_value = [Category("test_test", 1, 1)]
     response = client.get('/portfolio/test_test')
+    mock_view_user.get_category_by_title.assert_called_once_with("test test")
     assert response.request.path == '/portfolio/test_test'
     assert response.status_code == 200
 
 def test_category_hyphen_converter_space(test_category_client_and_mocks):
     client, mock_view_user= test_category_client_and_mocks
-    mock_view_user.get_all_categories.return_value = [Category("test test", 1, 1)]
-    response = client.get('/portfolio/test_test')
-    assert response.request.path == '/portfolio/test_test'
+    response = client.get('/portfolio/test test')
+    mock_view_user.get_category_by_title.assert_called_once_with("test test")
+    assert response.request.path == '/portfolio/test test'
     assert response.status_code == 200
 
 def test_category_hyphen_converter_apostrophe(test_category_client_and_mocks):
     client, mock_view_user= test_category_client_and_mocks
-    mock_view_user.get_all_categories.return_value = [Category("test's", 1, 1)]
     response = client.get("/portfolio/test's")
+    mock_view_user.get_category_by_title.assert_called_once_with("test's")
     assert response.request.path == "/portfolio/test's"
     assert response.status_code == 200
 
@@ -70,6 +70,6 @@ def test_category_not_found(test_category_client_and_mocks, caplog):
     mock_view_user.get_category_by_title.return_value = None
 
     with caplog.at_level("ERROR"):
-        response = client.get("/portfolio/NotTest")
+        response = client.get("/portfolio/NotACategory")
     assert response.status_code == 404
-    assert any("[CATEGORY] Category 'NotTest' not found" in message for message in caplog.text.split('\n'))
+    assert b"""<div class="flash-message error">Category &#39;NotACategory&#39; not found</div>""" in response.data
