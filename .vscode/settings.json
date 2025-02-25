@@ -17,6 +17,7 @@
         "jsonify",
         "kelseysportfoliowebsite",
         "levelname",
+        "mysqld",
         "nonexistentpage"
     ],
     "python.testing.pytestArgs": [
