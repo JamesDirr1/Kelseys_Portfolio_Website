@@ -19,7 +19,7 @@ def test_app_client_and_mocks():
     with app.test_client() as client, \
          patch('app.Root') as MockRoot, \
          patch('app.View_User') as MockViewUser, \
-         patch('app.logger') as mock_logger:
+         patch('app.app.logger') as mock_logger:
         
         # Mock instances
         mock_root = MagicMock()
