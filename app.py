@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, flash, abort
+from flask import Flask, request, redirect, flash, abort, render_template
 import time, logging, os
 from mysql_connections.mysql_Root import Root
 from mysql_connections.mysql_view_user import View_User
@@ -10,12 +10,23 @@ from dotenv import load_dotenv
 from data_classes.category import Category
 from werkzeug.routing import BaseConverter
 
+load = load_dotenv(override=True)
 
+from config.flask.config import Config
  
-app = Flask(__name__)
 
-load_dotenv(override=True)
-app.secret_key = os.getenv("FLASK_KEY")
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)
+    app.secret_key = app.config['SECRET_KEY']
+
+    app.url_map.converters['hyphen'] = HyphenConverter
+
+    app.register_blueprint(category_routes, url_prefix='/portfolio')
+    app.register_blueprint(project_routes, url_prefix='/portfolio')
+    app.register_blueprint(image_routes, url_prefix='/portfolio')
+
+    return app
 
 class HyphenConverter(BaseConverter): #Converts space characters to hyphens and hymens to spaces in urls.
     def to_python(self, value):
@@ -26,23 +37,15 @@ class HyphenConverter(BaseConverter): #Converts space characters to hyphens and 
         value = value.replace(' ', '_')
         return value
 
-def app_start_up(): #Function that handles anything that need to be setup before handling any request.
-    logger.info("---- APP STARTING ----")
+app = create_app()
 
-    app.url_map.converters['hyphen'] = HyphenConverter
-    
-    logger.register("category_routes")
-    app.register_blueprint(category_routes, url_prefix='/portfolio')
-    logger.register("project_routes")
-    app.register_blueprint(project_routes, url_prefix='/portfolio')
-    logger.register("image_routes")
-    app.register_blueprint(image_routes, url_prefix='/portfolio')
+
 
 def database_setup():
-    logger.info("---- Database Setup ----")
+    app.logger.info("---- Database Setup ----")
     Root_user= Root() #Creates MYSQL Root user
-    logger.info("Root user created")
-    logger.info("Checking if database is ready")
+    app.logger.info("Root user created")
+    app.logger.info("Checking if database is ready")
     connection = False 
     print("start")
     while connection == False: #Loops every 30 seconds and uses Root_user to try to connect to the database and make sure its ready to go.
@@ -52,40 +55,44 @@ def database_setup():
         except Exception as e:
             print("exception")
             print(f"----Could not connect to the database----\n {e}")
-            logger.error(f"----Could not connect to the database----\n {e}")
+            app.logger.error(f"----Could not connect to the database----\n {e}")
         if connection:
            print("breaking")
            break
         else:
            print("sleeping")
            time.sleep(5)
-    logger.info("---- Connection established ----")
+    app.logger.info("---- Connection established ----")
     print("end")
 
     try:
         Root_user.create_users() #Creates users for the database that will be used later in the app.
     except Exception as e: 
-        logger.critical(f"----Could not create users----\n {e}")
+        app.logger.critical(f"----Could not create users----\n {e}")
     
     try:
         Root_user.create_test_data()
     except Exception as e:
-        logger.debug(f"Could not create test data: {e}")
+        app.logger.debug(f"Could not create test data: {e}")
 
 def category_list():
     view_user = View_User()
     cat_list = view_user.get_all_categories()
     cat_total = len(cat_list)
     cat_list.append(Category("About", 0, cat_total + 1))
-    logger.debug(f"Category list: {cat_list}")
+    app.logger.debug(f"Category list: {cat_list}")
     return (cat_list)
 
 with app.app_context():
-    level = os.getenv("FLASK_Log")
-    logging.basicConfig(level="INFO", format=f'%(asctime)s %(levelname)-8s| %(message)s')
+    logging.basicConfig(level=app.config['LOG_LEVEL'], format=f'%(asctime)s %(levelname)-8s| %(message)s')
     logger = custom_logger.log("MAIN")
-    app_start_up() #initializes application
-    env = os.getenv("Flask_environment")
+
+    logger.info("---- APP STARTING ----")
+
+    
+
+
+    env = app.config['FLASK_ENVIRONMENT']
     print(env)
     if env != "Test":
         database_setup()
@@ -108,7 +115,7 @@ def index():
     logger.visit("Home")
     categories = category_list()    
     if len(categories) == 0: #Checks if there is any categories in the database, throws 404 error if not
-        logger.error("Trying to access categories when none exists")
+        app.logger.error("Trying to access categories when none exists")
         flash("No categories exists", "error")
         abort(404)
     main_category = min(categories, key=lambda cat: cat.category_order)
@@ -130,8 +137,6 @@ def log_response(response):
     logger.response(response.status, elapsed)
     return response
 
-from flask import render_template
-
 @app.errorhandler(404)
 def page_not_found(e):
     # This renders the base template with a custom error message for 404
@@ -143,6 +148,7 @@ def internal_server_error(e):
     return render_template('base.html', error_message="Internal Server Error"), 500
 
 
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
 
