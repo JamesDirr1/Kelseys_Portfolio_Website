@@ -9,26 +9,40 @@ from dotenv import load_dotenv
 class Root():
     def __init__(self): #Load .env file and set variables need to connect to the mysql database as the root user. 
         load_dotenv()
+        print("ROOT MADE")
         self.host = os.getenv('MYSQL_HOST')
+        print(self.host)
         self.port = int(os.getenv('MYSQL_PORT', 3306))
+        print(self.port)
         self.user = os.getenv('MYSQL_ROOT')
+        print(self.user)
         self.password = os.getenv('MYSQL_ROOT_PASSWORD')
+        print(self.password)
         self.db = os.getenv('MYSQL_DB')
+        print(self.db)
         self.view_user = os.getenv('MYSQL_VIEW_USER')
         self.view_user_password = os.getenv('MYSQL_VIEW_USER_PASSWORD')
         self.logger = utility_classes.custom_logger.log("ROOT")
 
     def create_connection(self): #Function that creates a PyMySQL connection using the variables outlined above
-        self.logger.info("Connection created")
-        connection = pymysql.connect(
-            host=self.host,
-            port=self.port,
-            user=self.user,
-            password=self.password,
-            database=self.db,
-            cursorclass=DictCursor
-        )
-        return connection
+        self.logger.info(f"Creating connection to {self.host}")
+        try:
+            connection = pymysql.connect(
+                host=self.host,
+                port=self.port,
+                user=self.user,
+                password=self.password,
+                database=self.db,
+                cursorclass=DictCursor
+            )
+            self.logger.info("Connection created")
+            return connection
+        except pymysql.MySQLError as e:
+            self.logger.error(f"Connection failed, could not create connection: {e}")
+            raise  # re-raise so it still fails in calling function
+        except Exception as e:
+            self.logger.error(f"Unexpected error, could not create connection:: {e}")
+            raise
     
     def try_connection(self): #Function that attempts to connect to the database to ensure that it is ready to go.
         status = False
@@ -37,13 +51,14 @@ class Root():
                        'VV.project', 'category',
                         'image', 'project'}
         
-        self.logger.info("Testing connection to database")
+        self.logger.info("Testing connection to database Root Class")
         start_time = time.time()
         self.logger.con_open()
         connection = self.create_connection()
         cursor = connection.cursor()
         try:
             with connection.cursor() as cursor:
+                print("show tables Root Class")
                 cursor.execute("Show tables;") #Query the database for a list of all tables.
                 tables = cursor.fetchall()
                 self.logger.query("Show tables;", f"{tables}")
