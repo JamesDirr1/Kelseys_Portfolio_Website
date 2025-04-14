@@ -25,17 +25,24 @@ class Root():
         self.logger = utility_classes.custom_logger.log("ROOT")
 
     def create_connection(self): #Function that creates a PyMySQL connection using the variables outlined above
-        self.logger.info("Connection created")
-        print(f"CONNECTION MADE \n {self.host}")
-        connection = pymysql.connect(
-            host=self.host,
-            port=self.port,
-            user=self.user,
-            password=self.password,
-            database=self.db,
-            cursorclass=DictCursor
-        )
-        return connection
+        self.logger.info(f"Creating connection to {self.host}")
+        try:
+            connection = pymysql.connect(
+                host=self.host,
+                port=self.port,
+                user=self.user,
+                password=self.password,
+                database=self.db,
+                cursorclass=DictCursor
+            )
+            self.logger.info("Connection created")
+            return connection
+        except pymysql.MySQLError as e:
+            self.logger.error(f"Connection failed, could not create connection: {e}")
+            raise  # re-raise so it still fails in calling function
+        except Exception as e:
+            self.logger.error(f"Unexpected error, could not create connection:: {e}")
+            raise
     
     def try_connection(self): #Function that attempts to connect to the database to ensure that it is ready to go.
         status = False
@@ -44,15 +51,14 @@ class Root():
                        'VV.project', 'category',
                         'image', 'project'}
         
-        self.logger.info("Testing connection to database")
-        print("Testing connection to database")
+        self.logger.info("Testing connection to database Root Class")
         start_time = time.time()
         self.logger.con_open()
         connection = self.create_connection()
         cursor = connection.cursor()
         try:
             with connection.cursor() as cursor:
-                print("show tables")
+                print("show tables Root Class")
                 cursor.execute("Show tables;") #Query the database for a list of all tables.
                 tables = cursor.fetchall()
                 self.logger.query("Show tables;", f"{tables}")
