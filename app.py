@@ -1,3 +1,4 @@
+import sys
 from flask import Flask, request, redirect, flash, abort, render_template
 import time, logging, os
 from mysql_connections.mysql_Root import Root
@@ -84,7 +85,13 @@ def category_list():
     return (cat_list)
 
 with app.app_context():
-    logging.basicConfig(level=app.config['LOG_LEVEL'], format=f'%(asctime)s %(levelname)-8s| %(message)s')
+    logging.basicConfig(
+    level=logging.DEBUG,
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ],
+    format='%(asctime)s %(levelname)-8s| %(message)s'
+)
     logger = custom_logger.log("MAIN")
 
     logger.info("---- APP STARTING ----")
@@ -93,8 +100,9 @@ with app.app_context():
 
 
     env = app.config['FLASK_ENVIRONMENT']
-    print(env)
+    print(f"flask env: {env}")
     if env != "Test":
+        print("starting database setup")
         database_setup()
 
 @app.context_processor

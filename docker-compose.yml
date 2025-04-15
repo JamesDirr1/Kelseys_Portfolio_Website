@@ -10,6 +10,8 @@ services:
       - 5000:5000
     depends_on:
       - my-mysql
+    networks:
+      - WebServerNetwork
       
     environment:
       MYSQL_HOST: ${MYSQL_HOST}
@@ -20,6 +22,7 @@ services:
       MYSQL_VIEW_USER_PASSWORD: ${MYSQL_VIEW_USER_PASSWORD}
       MYSQL_DB: ${MYSQL_DB}
       FLASK_KEY: ${FLASK_KEY}
+      PYTHONUNBUFFERED: 1
 
   my-mysql:
     image: mysql:5.7  
@@ -31,6 +34,8 @@ services:
       MYSQL_USER: ${MYSQL_ROOT_USER}
       MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_ROOT: ${MYSQL_ROOT}
+    networks:
+      - WebServerNetwork
     volumes:
       - mysql-data:/var/lib/mysql
       - ./sql-scripts:/docker-entrypoint-initdb.d  
@@ -39,3 +44,6 @@ services:
 
 volumes:
   mysql-data:
+
+networks:
+  WebServerNetwork: {}
