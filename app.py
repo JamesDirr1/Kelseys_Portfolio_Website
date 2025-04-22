@@ -48,23 +48,16 @@ def database_setup():
     app.logger.info("Root user created")
     app.logger.info("Checking if database is ready")
     connection = False 
-    print("start")
     while connection == False: #Loops every 30 seconds and uses Root_user to try to connect to the database and make sure its ready to go.
         try: 
             connection = Root_user.try_connection()
-            print(f"Connection = {connection}")
         except Exception as e:
-            print("exception")
-            print(f"----Could not connect to the database----\n {e}")
             app.logger.error(f"----Could not connect to the database----\n {e}")
         if connection:
-           print("breaking")
            break
         else:
-           print("sleeping")
            time.sleep(5)
     app.logger.info("---- Connection established ----")
-    print("end")
 
     try:
         Root_user.create_users() #Creates users for the database that will be used later in the app.
@@ -100,14 +93,12 @@ with app.app_context():
 
 
     env = app.config['FLASK_ENVIRONMENT']
-    print(f"flask env: {env}")
     if env != "Test":
-        print("starting database setup")
+        app.logger.debug('NOT IN TEST')
         database_setup()
 
 @app.context_processor
 def get_navbar():
-    print("navbar")
     logger.info("Getting categories for nav bar")
     categories = category_list()
     return dict(categories = categories)
