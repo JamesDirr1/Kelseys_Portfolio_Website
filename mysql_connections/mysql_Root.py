@@ -9,23 +9,17 @@ from dotenv import load_dotenv
 class Root():
     def __init__(self): #Load .env file and set variables need to connect to the mysql database as the root user. 
         load_dotenv()
-        print("ROOT MADE")
         self.host = os.getenv('MYSQL_HOST')
-        print(self.host)
         self.port = int(os.getenv('MYSQL_PORT', 3306))
-        print(self.port)
         self.user = os.getenv('MYSQL_ROOT')
-        print(self.user)
         self.password = os.getenv('MYSQL_ROOT_PASSWORD')
-        print(self.password)
         self.db = os.getenv('MYSQL_DB')
-        print(self.db)
         self.view_user = os.getenv('MYSQL_VIEW_USER')
         self.view_user_password = os.getenv('MYSQL_VIEW_USER_PASSWORD')
         self.logger = utility_classes.custom_logger.log("ROOT")
 
     def create_connection(self): #Function that creates a PyMySQL connection using the variables outlined above
-        self.logger.info(f"Creating connection to {self.host}")
+        self.logger.info(f"Creating connection to: {self.host}")
         try:
             connection = pymysql.connect(
                 host=self.host,
@@ -58,7 +52,6 @@ class Root():
         cursor = connection.cursor()
         try:
             with connection.cursor() as cursor:
-                print("show tables Root Class")
                 cursor.execute("Show tables;") #Query the database for a list of all tables.
                 tables = cursor.fetchall()
                 self.logger.query("Show tables;", f"{tables}")
