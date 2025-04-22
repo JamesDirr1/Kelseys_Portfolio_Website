@@ -94,7 +94,7 @@ with app.app_context():
 
     env = app.config['FLASK_ENVIRONMENT']
     if env != "Test":
-        app.logger.debug['NOT IN TEST']
+        app.logger.debug('NOT IN TEST')
         database_setup()
 
 @app.context_processor
