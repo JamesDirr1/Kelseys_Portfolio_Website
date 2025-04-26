@@ -7,6 +7,7 @@ from utility_classes import custom_logger
 from routes.route_category import category_routes
 from routes.route_project import project_routes
 from routes.route_image import image_routes
+from routes.route_admin_dashboard import admin_dashboard_routes
 from dotenv import load_dotenv
 from data_classes.category import Category
 from werkzeug.routing import BaseConverter
@@ -26,6 +27,7 @@ def create_app():
     app.register_blueprint(category_routes, url_prefix='/portfolio')
     app.register_blueprint(project_routes, url_prefix='/portfolio')
     app.register_blueprint(image_routes, url_prefix='/portfolio')
+    app.register_blueprint(admin_dashboard_routes, url_prefix='/admin')
 
     return app
 
@@ -121,6 +123,12 @@ def index():
     url = main_category.category_title
     logger.redirect(f"/portfolio/{url}")
     return redirect(f'/portfolio/{url}')
+
+@app.route('/admin')
+def admin():
+    logger.visit("ADMIN")
+    logger.redirect(f"/admin/dashboard")
+    return redirect(f'/admin/dashboard')
 
 @app.route('/error')
 def error_route():
