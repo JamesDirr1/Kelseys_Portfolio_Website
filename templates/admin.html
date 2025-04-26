@@ -21,21 +21,7 @@
                 </a>
                 <h1>Admin Dashboard</h1>
                 </div>
-                <nav>
-                    {% for category in categories %}
-                    <a class= nav-button href="{{ url_for('category.display_category_projects', url_category=category.category_title.lower()) }}">{{ category.category_title }}</a>
-                    {% endfor %}
-                </nav>
         </header>
-        <div class="flash-container">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="flash-message {{ category }}">{{ message }}</div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-        </div>
 
         {% if error_message %}
             <div class="error-message">
@@ -53,6 +39,15 @@
         <script src="{{ url_for('static', filename='scripts.js') }}"></script>
         <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
     </body>
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
     <footer>
         <div class="footer-container">
             <p>&copy; 2025 Kelsey Spade. All Rights Reserved.</p>
