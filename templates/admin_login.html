@@ -1,0 +1,17 @@
+{% extends 'admin.html' %}
+
+{% block content %}
+
+<h1>Login</h1>
+
+<div class="login-container">
+    <form method="POST">
+        <label for="username">Username</label><br>
+        <input type="text" id="username" placeholder="Username goes here!" name="username" required oninvalid="this.setCustomValidity('Username is required')" oninput="this.setCustomValidity('')"><br>
+        <label>Password</label><br>
+        <input type="password" id="'password" placeholder="Supersecret password!" name="password" required oninvalid="this.setCustomValidity('Password is required')" oninput="this.setCustomValidity('')"><br><br>
+        <button type="submit">Login</button>
+    </form>
+</div>
+
+{% endblock %}

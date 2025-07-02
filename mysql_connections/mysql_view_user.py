@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 from data_classes.category import Category
 from data_classes.project import Project
 from data_classes.image import Image
+from data_classes.user import User
+from werkzeug.security import check_password_hash
 
 #MySQL class that acts as the view user for executing MYSQL queries that are limited to the database views.
 #Uses PyMySQL to execute queries. 
@@ -64,6 +66,16 @@ class View_User():
                         image_weight = image["image_weight"], 
                         project_id = image["project_id"])
         return(image)
+    
+    def create_user(self, user): #function that builds an user object from a dic
+        self.logger.debug("Creating user from dic")
+        user = User(
+            user_id=user["user_id"],
+            user_name=user["user_name"],
+            user_password=user["user_password"]
+        )
+        return(user)
+
     
     def create_connection(self): #Function that creates a PyMySQL connection using the variables outlined above.
         self.logger.info("Connection created")
@@ -227,5 +239,42 @@ class View_User():
         if results is not None:
             image = self.create_image(results[0])
         return (image)
+    
+    def check_user_exist_and_password(self, user_name, user_password):#Function that attempts to query a data base for a specific user and if their password matches
+        name_match = False
+        password_match = False
+        self.logger.con_open
+        start_time = time.time()
+        connection = self.create_connection()
+        cursor = connection.cursor()
+        query = ("SELECT * FROM `VV.users` WHERE user_name=%s")
+        try: 
+            with connection.cursor() as cursor:
+                self.logger.info(f"Checking if username '{user_name}' exist")
+                cursor.execute(query, user_name)
+                result = cursor.fetchone()
+                self.logger.debug(f"USER RESULTS {result}") #dont use in prod
 
+                if result is None:
+                    self.logger.info(f"Unable to find username '{user_name}'")
+                    return (name_match, password_match)
+            
+                db_user = self.create_user(result)
+
+                if  db_user.user_name == user_name:
+                    name_match = True
+
+                # If you hashed passwords when saving:
+                if check_password_hash(db_user.user_password, user_password):
+                    password_match = True
+        except pymysql.MySQLError as e:
+            self.logger.error(f"unable to complete: {query}. MySQL error: {e}")
+        finally:
+            connection.close()
+            cursor.close()
+            end_time = time.time()- start_time
+            self.logger.con_close(end_time)
+
+        return (name_match, password_match)
+                
     

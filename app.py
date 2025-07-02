@@ -8,6 +8,7 @@ from routes.route_category import category_routes
 from routes.route_project import project_routes
 from routes.route_image import image_routes
 from routes.route_admin_dashboard import admin_dashboard_routes
+from routes.route_admin_login import auth_routes
 from dotenv import load_dotenv
 from data_classes.category import Category
 from werkzeug.routing import BaseConverter
@@ -28,6 +29,7 @@ def create_app():
     app.register_blueprint(project_routes, url_prefix='/portfolio')
     app.register_blueprint(image_routes, url_prefix='/portfolio')
     app.register_blueprint(admin_dashboard_routes, url_prefix='/admin')
+    app.register_blueprint(auth_routes, url_prefix='/admin' )
 
     return app
 
@@ -65,6 +67,11 @@ def database_setup():
         Root_user.create_users() #Creates users for the database that will be used later in the app.
     except Exception as e: 
         app.logger.critical(f"----Could not create users----\n {e}")
+
+    try:
+        Root_user.add_admin_user() #Creates users for the database that will be used later in the app.
+    except Exception as e: 
+        app.logger.critical(f"----Could not create admin user----\n {e}")
     
     try:
         Root_user.create_test_data()
@@ -90,9 +97,6 @@ with app.app_context():
     logger = custom_logger.log("MAIN")
 
     logger.info("---- APP STARTING ----")
-
-    
-
 
     env = app.config['FLASK_ENVIRONMENT']
     if env != "Test":
@@ -153,7 +157,6 @@ def page_not_found(e):
 def internal_server_error(e):
     # This renders the base template with a custom error message for 500
     return render_template('base.html', error_message="Internal Server Error"), 500
-
 
 
 if __name__ == '__main__':

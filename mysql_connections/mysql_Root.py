@@ -1,6 +1,7 @@
 import pymysql, time, os, utility_classes.custom_logger
 from pymysql.cursors import DictCursor
 from dotenv import load_dotenv
+from werkzeug.security import generate_password_hash
 
 #MySQL class that acts as the Root user for executing MYSQL queries that require root level permissions.
 #This should only be called when needed.
@@ -43,7 +44,8 @@ class Root():
         #Set of table names ---Needs Updated if more tables are added---
         need_tables = {'VV.category', 'VV.image',
                        'VV.project', 'category',
-                        'image', 'project'}
+                        'image', 'project',
+                        'VV.users', 'users'}
         
         self.logger.info("Testing connection to database Root Class")
         start_time = time.time()
@@ -84,6 +86,7 @@ class Root():
                    f"GRANT SELECT ON `VV.category` TO '{self.view_user}'@'%';",
                    f"GRANT SELECT ON `VV.project` TO '{self.view_user}'@'%';",
                    f"GRANT SELECT ON `VV.image` TO '{self.view_user}'@'%';",
+                   f"GRANT SELECT ON `VV.users` TO '{self.view_user}'@'%';",
                    "FLUSH PRIVILEGES;"
                    ]
         try: 
@@ -110,6 +113,36 @@ class Root():
              connection.close()
              end_time = time.time() - start_time
              self.logger.con_close(end_time)
+    
+    def add_admin_user(self):
+        user = os.getenv('ADMIN_USERNAME')
+        self.logger.info(f'Adding admin user {user} to the database')
+        query = f"SELECT * FROM `users` WHERE user_name= '{user}';"
+        self.logger.con_open()
+        start_time = time.time()
+        connection = self.create_connection()
+        cursor = connection.cursor()
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(query)
+                users = cursor.fetchall()
+                self.logger.query(query, users)
+                if len(users) == 1:
+                    self.logger.info(f"Admin user {user} already exist")
+                else:
+                    self.logger.info(f'Adding admin user does not exist adding base admin account')
+                    password = os.getenv('ADMIN_PASSWORD')
+                    password = generate_password_hash(password)
+                    cursor.execute(f"INSERT INTO users (user_name, user_password) VALUES (%s,%s)", (user, password))
+                    connection.commit()
+        except pymysql.MySQLError as e:
+            self.logger.error(f"Was not able to create admin account: {e}")
+        finally:
+            cursor.close()
+            connection.close()
+            end_time = time.time() - start_time
+            self.logger.con_close(end_time)
+
 
     def create_test_data(self): # DO NOT USE IN PROD - Function used to fill database with test data. 
         self.logger.con_open()
