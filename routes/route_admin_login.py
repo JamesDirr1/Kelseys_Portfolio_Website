@@ -26,7 +26,7 @@ def login():
             logger.info(f"'{username}' authenticated")
             session['logged_in'] = True
             flash("Login successful!", "success")
-            return redirect(url_for('dashboard.display_dashboard')) ,
+            return redirect(url_for('dashboard.display_dashboard'))
         else:
             logger.info(f"Could not authenticate '{username}'")
             flash("Invalid credentials", "error")
