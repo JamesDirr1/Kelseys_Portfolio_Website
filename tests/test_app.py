@@ -67,6 +67,29 @@ def test_database_setup_create_users_failed(test_app_client_and_mocks):
     assert mock_root.create_users.call_once()
     mock_logger.critical.assert_any_call("----Could not create users----\n Connection Failed")
 
+def test_database_setup_create_admin_user_failed(test_app_client_and_mocks):
+    _, mock_root, _,mock_logger = test_app_client_and_mocks
+    mock_root.try_connection.return_value =True
+
+    with patch('time.sleep', return_value=None) as mock_sleep:
+        database_setup()
+    
+    # Verify the correct calls were made
+    assert mock_root.add_admin_user.call_once()
+
+
+def test_database_setup_create_admin_user_failed(test_app_client_and_mocks):
+    _, mock_root, _,mock_logger = test_app_client_and_mocks
+    mock_root.try_connection.return_value =True
+    mock_root.add_admin_user.side_effect = Exception("Connection Failed")
+
+    with patch('time.sleep', return_value=None) as mock_sleep:
+        database_setup()
+    
+    # Verify the correct calls were made
+    assert mock_root.add_admin_user.call_once()
+    mock_logger.critical.assert_any_call("----Could not create admin user----\n Connection Failed")
+
 def test_database_setup_create_test_data(test_app_client_and_mocks):
     _, mock_root, _,mock_logger = test_app_client_and_mocks
     mock_root.try_connection.return_value =True
