@@ -81,3 +81,37 @@ def test_image_client_and_mocks():
         
         # Yield the client and all mocks as a tuple
         yield client, mock_view_user
+
+@pytest.fixture(scope='function')
+def test_dashboard_client_and_mocks():
+    app.testing = True
+    with app.test_client() as client, \
+         patch('routes.route_admin_dashboard.mysql_view_user.View_User') as MockViewUser, \
+         patch('app.View_User') as app_view_user:
+        
+        # Mocking View_User
+        mock_view_user = MagicMock()
+        MockViewUser.return_value = mock_view_user
+        
+        # Mocking the get_navbar context processor
+        app_view_user.get_all_categories.return_value = [Category("test", 1, 1)]
+        
+        # Yield the client and all mocks as a tuple
+        yield client, mock_view_user
+
+@pytest.fixture(scope='function')
+def test_login_client_and_mocks():
+    app.testing = True
+    with app.test_client() as client, \
+         patch('routes.route_admin_login.mysql_view_user.View_User') as MockViewUser, \
+         patch('app.View_User') as app_view_user:
+        
+        # Mocking View_User
+        mock_view_user = MagicMock()
+        MockViewUser.return_value = mock_view_user
+        
+        # Mocking the get_navbar context processor
+        app_view_user.get_all_categories.return_value = [Category("test", 1, 1)]
+        
+        # Yield the client and all mocks as a tuple
+        yield client, mock_view_user
