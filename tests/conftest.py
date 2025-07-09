@@ -115,3 +115,29 @@ def test_login_client_and_mocks():
         
         # Yield the client and all mocks as a tuple
         yield client, mock_view_user
+
+@pytest.fixture(scope='function')
+def test_mysql_root_client_and_mocks():
+    app.testing = True
+    with app.test_client() as client, \
+         patch('app.Root') as MockRoot, \
+         patch('app.View_User') as MockViewUser, \
+         patch('app.app.logger') as mock_logger:
+
+        # Mock Root instance and its logger
+        mock_root = MagicMock()
+        MockRoot.return_value = mock_root
+
+        # Patch the logger used inside Root class
+        mock_root.logger.con_open = MagicMock()
+        mock_root.logger.con_close = MagicMock()
+        mock_root.logger.info = MagicMock()
+        mock_root.logger.error = MagicMock()
+        mock_root.logger.debug = MagicMock()
+        mock_root.logger.query = MagicMock()
+
+        # Mock View_User
+        mock_view_user = MagicMock()
+        MockViewUser.return_value = mock_view_user
+
+        yield client, mock_root, mock_view_user, mock_logger

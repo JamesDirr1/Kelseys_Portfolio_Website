@@ -50,9 +50,12 @@ class Root():
         self.logger.info("Testing connection to database Root Class")
         start_time = time.time()
         self.logger.con_open()
-        connection = self.create_connection()
-        cursor = connection.cursor()
+
+        connection = None
+        cursor = None
         try:
+            connection = self.create_connection()
+            cursor = connection.cursor()
             with connection.cursor() as cursor:
                 cursor.execute("Show tables;") #Query the database for a list of all tables.
                 tables = cursor.fetchall()
@@ -68,8 +71,10 @@ class Root():
         except pymysql.MySQLError as e:
             self.logger.error(f"Unable to connect to server: {e}")
         finally:
-            cursor.close()
-            connection.close()
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
             end_time = time.time() - start_time
             self.logger.con_close(end_time)
             return(status) #Returns status True if all tables made, false other wise. 
@@ -80,8 +85,9 @@ class Root():
         self.logger.info("Creating users")
         self.logger.con_open()
         start_time = time.time()
-        connection = self.create_connection()
-        cursor = connection.cursor()
+        connection = None
+        cursor = None
+
         queries = [ #List of queries that need executed when making the users.
                    f"GRANT SELECT ON `VV.category` TO '{self.view_user}'@'%';",
                    f"GRANT SELECT ON `VV.project` TO '{self.view_user}'@'%';",
@@ -90,6 +96,8 @@ class Root():
                    "FLUSH PRIVILEGES;"
                    ]
         try: 
+            connection = self.create_connection()
+            cursor = connection.cursor()
             with connection.cursor() as cursor:
                 self.logger.info(f"Checking if user {self.view_user} exist")
                 cursor.execute(f"SELECT user FROM mysql.user WHERE user = '{self.view_user}';")
@@ -105,14 +113,16 @@ class Root():
                     for query in queries: #Loops through queries and executes one at a time. 
                         self.logger.debug(f"{query}")
                         cursor.execute(query)
-                    connection.commit
+                    connection.commit()
         except pymysql.MySQLError as e:
                 self.logger.error(f"Was not able to create users: {e}")
         finally:
-             cursor.close()
-             connection.close()
-             end_time = time.time() - start_time
-             self.logger.con_close(end_time)
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+            end_time = time.time() - start_time
+            self.logger.con_close(end_time)
     
     def add_admin_user(self):
         user = os.getenv('ADMIN_USERNAME')
@@ -120,9 +130,12 @@ class Root():
         query = f"SELECT * FROM `users` WHERE user_name= '{user}';"
         self.logger.con_open()
         start_time = time.time()
-        connection = self.create_connection()
-        cursor = connection.cursor()
+
+        connection = None
+        cursor = None
         try:
+            connection = self.create_connection()
+            cursor = connection.cursor()
             with connection.cursor() as cursor:
                 cursor.execute(query)
                 users = cursor.fetchall()
@@ -138,8 +151,10 @@ class Root():
         except pymysql.MySQLError as e:
             self.logger.error(f"Was not able to create admin account: {e}")
         finally:
-            cursor.close()
-            connection.close()
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
             end_time = time.time() - start_time
             self.logger.con_close(end_time)
 
@@ -147,11 +162,13 @@ class Root():
     def create_test_data(self): # DO NOT USE IN PROD - Function used to fill database with test data. 
         self.logger.con_open()
         start_time = time.time()
-        connection = self.create_connection()
-        cursor = connection.cursor()
         query = "select * from `category`;"
         test_data = "Call clear_data(); Call test_data();"
+        connection = None
+        cursor = None
         try:
+            connection = self.create_connection()
+            cursor = connection.cursor()
             with connection.cursor() as cursor:
                 self.logger.info("Testing if there is already data")
                 cursor.execute(query)
@@ -168,8 +185,10 @@ class Root():
         except pymysql.MySQLError as e:
             self.logger.error(f"Was not able to add test data: {e}")
         finally:
-            cursor.close()
-            connection.close()
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
             end_time = time.time() - start_time
             self.logger.con_close(end_time)
 
