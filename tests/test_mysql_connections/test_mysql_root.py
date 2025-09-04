@@ -89,7 +89,7 @@ def test_root_create_connection_general_error():
             with pytest.raises(RuntimeError):
                 root.create_connection()
 
-            mock_error.assert_called_with("Unexpected error, could not create connection:: Mocked failure")
+            mock_error.assert_called_with("Unexpected error, could not create connection: Mocked failure")
 
 def test_root_try_connection():
     with app.app_context():

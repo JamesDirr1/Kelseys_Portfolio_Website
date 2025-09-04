@@ -27,7 +27,12 @@ def display_category_projects(url_category):
 
     view_user = mysql_view_user.View_User() #Build view user
     
-    current_category = view_user.get_category_by_title(url_category) #Checks if the provide url category exists
+    try:
+        current_category = view_user.get_category_by_title(url_category) #Checks if the provide url category exists
+    except Exception as e:
+        logger.error(f"Error looking up category {url_category}: {e}")
+        flash(f"An Error occurred when attempting to look up '{url_category}'", "error")
+        abort(500)
 
     if not current_category: #if the proved url does not exist throws 404
         logger.error(f"Category '{url_category}' not found")
