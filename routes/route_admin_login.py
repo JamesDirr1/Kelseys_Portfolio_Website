@@ -20,8 +20,13 @@ def login():
         username = request.form.get('username')
         logger.info(f"'{username}' is attempting to login")
         password = request.form.get('password')
-
-        name_match, password_match = view_user.check_user_exist_and_password(username, password)
+        try:
+            name_match, password_match = view_user.check_user_exist_and_password(username, password)
+        except Exception as e:
+            logger.error(f"Error checking user for login: {e}")
+            flash("Unable to validate credentials at this time!", "error")
+            return redirect(url_for('auth.login'))
+        
         if name_match and password_match:
             logger.info(f"'{username}' authenticated")
             session['logged_in'] = True
@@ -30,6 +35,6 @@ def login():
         else:
             logger.info(f"Could not authenticate '{username}'")
             flash("Invalid credentials", "error")
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('auth.login'), )
 
     return render_template('admin_login.html')

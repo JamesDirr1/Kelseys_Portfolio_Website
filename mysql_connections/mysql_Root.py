@@ -36,7 +36,7 @@ class Root():
             self.logger.error(f"Connection failed, could not create connection: {e}")
             raise  # re-raise so it still fails in calling function
         except Exception as e:
-            self.logger.error(f"Unexpected error, could not create connection:: {e}")
+            self.logger.error(f"Unexpected error, could not create connection: {e}")
             raise
     
     def try_connection(self): #Function that attempts to connect to the database to ensure that it is ready to go.
@@ -47,7 +47,7 @@ class Root():
                         'image', 'project',
                         'VV.users', 'users'}
         
-        self.logger.info("Testing connection to database Root Class")
+        self.logger.info("Testing connection to database")
         start_time = time.time()
         self.logger.con_open()
 
@@ -55,7 +55,6 @@ class Root():
         cursor = None
         try:
             connection = self.create_connection()
-            cursor = connection.cursor()
             with connection.cursor() as cursor:
                 cursor.execute("Show tables;") #Query the database for a list of all tables.
                 tables = cursor.fetchall()
@@ -97,7 +96,6 @@ class Root():
                    ]
         try: 
             connection = self.create_connection()
-            cursor = connection.cursor()
             with connection.cursor() as cursor:
                 self.logger.info(f"Checking if user {self.view_user} exist")
                 cursor.execute(f"SELECT user FROM mysql.user WHERE user = '{self.view_user}';")
@@ -135,7 +133,6 @@ class Root():
         cursor = None
         try:
             connection = self.create_connection()
-            cursor = connection.cursor()
             with connection.cursor() as cursor:
                 cursor.execute(query)
                 users = cursor.fetchall()
@@ -168,7 +165,6 @@ class Root():
         cursor = None
         try:
             connection = self.create_connection()
-            cursor = connection.cursor()
             with connection.cursor() as cursor:
                 self.logger.info("Testing if there is already data")
                 cursor.execute(query)
