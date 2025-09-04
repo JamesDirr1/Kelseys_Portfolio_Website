@@ -29,6 +29,11 @@ class Config:
     MYSQL_VIEW_USER_PASSWORD = os.getenv("MYSQL_VIEW_USER_PASSWORD")
 
 
+    #Main admin account
+    ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
+    ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+
+
 
 
 

@@ -17,7 +17,12 @@ def display_image(url_category, url_project, url_image):
 
     view_user = mysql_view_user.View_User() #Build view user
 
-    image = view_user.get_image(url_image)
+    try:
+        image = view_user.get_image(url_image)
+    except Exception as e:
+        logger.error(f"Error looking up image {url_image}: {e}")
+        flash(f"An Error occurred when attempting to look up image '{url_image}' from '{url_project}'", "error")
+        abort(500)
 
     logger.info(f"Image: {image}")
     if image is None: 

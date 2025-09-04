@@ -7,6 +7,8 @@ from utility_classes import custom_logger
 from routes.route_category import category_routes
 from routes.route_project import project_routes
 from routes.route_image import image_routes
+from routes.route_admin_dashboard import admin_dashboard_routes
+from routes.route_admin_login import auth_routes
 from dotenv import load_dotenv
 from data_classes.category import Category
 from werkzeug.routing import BaseConverter
@@ -26,6 +28,8 @@ def create_app():
     app.register_blueprint(category_routes, url_prefix='/portfolio')
     app.register_blueprint(project_routes, url_prefix='/portfolio')
     app.register_blueprint(image_routes, url_prefix='/portfolio')
+    app.register_blueprint(admin_dashboard_routes, url_prefix='/admin')
+    app.register_blueprint(auth_routes, url_prefix='/admin' )
 
     return app
 
@@ -48,28 +52,26 @@ def database_setup():
     app.logger.info("Root user created")
     app.logger.info("Checking if database is ready")
     connection = False 
-    print("start")
     while connection == False: #Loops every 30 seconds and uses Root_user to try to connect to the database and make sure its ready to go.
         try: 
             connection = Root_user.try_connection()
-            print(f"Connection = {connection}")
         except Exception as e:
-            print("exception")
-            print(f"----Could not connect to the database----\n {e}")
             app.logger.error(f"----Could not connect to the database----\n {e}")
         if connection:
-           print("breaking")
            break
         else:
-           print("sleeping")
            time.sleep(5)
     app.logger.info("---- Connection established ----")
-    print("end")
 
     try:
         Root_user.create_users() #Creates users for the database that will be used later in the app.
     except Exception as e: 
         app.logger.critical(f"----Could not create users----\n {e}")
+
+    try:
+        Root_user.add_admin_user() #Creates users for the database that will be used later in the app.
+    except Exception as e: 
+        app.logger.critical(f"----Could not create admin user----\n {e}")
     
     try:
         Root_user.create_test_data()
@@ -96,18 +98,13 @@ with app.app_context():
 
     logger.info("---- APP STARTING ----")
 
-    
-
-
     env = app.config['FLASK_ENVIRONMENT']
-    print(f"flask env: {env}")
     if env != "Test":
-        print("starting database setup")
+        app.logger.debug('NOT IN TEST')
         database_setup()
 
 @app.context_processor
 def get_navbar():
-    print("navbar")
     logger.info("Getting categories for nav bar")
     categories = category_list()
     return dict(categories = categories)
@@ -130,6 +127,12 @@ def index():
     url = main_category.category_title
     logger.redirect(f"/portfolio/{url}")
     return redirect(f'/portfolio/{url}')
+
+@app.route('/admin')
+def admin():
+    logger.visit("ADMIN")
+    logger.redirect(f"/admin/dashboard")
+    return redirect(f'/admin/dashboard')
 
 @app.route('/error')
 def error_route():
@@ -154,7 +157,6 @@ def page_not_found(e):
 def internal_server_error(e):
     # This renders the base template with a custom error message for 500
     return render_template('base.html', error_message="Internal Server Error"), 500
-
 
 
 if __name__ == '__main__':

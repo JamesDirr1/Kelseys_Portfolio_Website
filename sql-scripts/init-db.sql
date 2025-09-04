@@ -26,6 +26,13 @@ CREATE TABLE IF NOT EXISTS image (
     FOREIGN KEY (project_id) REFERENCES project(project_id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS users (
+	user_id INT AUTO_INCREMENT PRIMARY KEY,
+	user_name VARCHAR(50) NOT NULL UNIQUE,
+	user_password VARCHAR(255) NOT NULL,
+	user_creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE or Replace view `VV.category` AS
     SELECT category_id, category_title, category_order
     FROM category;
@@ -38,12 +45,18 @@ CREATE or Replace view `VV.image` AS
     SELECT image_id, image_title, image_desc, image_URL, image_weight, image.project_id
     FROM image;
 
+CREATE or Replace view `VV.users` AS
+	SELECT user_id, user_name, user_password, user_creation_time
+	FROM users;
+
 DELETE from category;
 DELETE from project;
 DELETE from image;
+DELETE from users;
 ALTER TABLE image AUTO_INCREMENT = 1;
 ALTER TABLE project AUTO_INCREMENT = 1;
 ALTER TABLE category AUTO_INCREMENT = 1;
+ALTER TABLE users AUTO_INCREMENT = 1;
 
 DELIMITER $$
 
