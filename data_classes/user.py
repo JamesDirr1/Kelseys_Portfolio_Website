@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, Any, Dict
 from datetime import date
 from werkzeug.security import generate_password_hash
-import utility_classes.custom_logger
+from utility_classes.custom_logger import log
 
 # Data class that represents the columns from the category table.
 
@@ -16,7 +16,7 @@ class User:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "User":
-        logger = utility_classes.custom_logger.log("DATA")
+        logger = log("DATA")
         logger.debug("Attempting to create User")
         try:
             user = cls(

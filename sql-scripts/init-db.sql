@@ -1,10 +1,11 @@
+-- Create category table
 CREATE TABLE IF NOT EXISTS category (
     category_id TINYINT AUTO_INCREMENT PRIMARY KEY,
     category_title VARCHAR(100),
     category_order TINYINT UNIQUE
 );
 
--- Create the project table
+-- Create project table
 CREATE TABLE IF NOT EXISTS project (
     project_id INT AUTO_INCREMENT PRIMARY KEY,
     project_title VARCHAR(255) NOT NULL,
@@ -15,7 +16,7 @@ CREATE TABLE IF NOT EXISTS project (
     FOREIGN KEY (category_id) REFERENCES category(category_id) ON DELETE CASCADE
 );
 
--- Create the image table
+-- Create image table
 CREATE TABLE IF NOT EXISTS image (
     image_id INT AUTO_INCREMENT PRIMARY KEY,
     image_title VARCHAR(255),
@@ -26,11 +27,20 @@ CREATE TABLE IF NOT EXISTS image (
     FOREIGN KEY (project_id) REFERENCES project(project_id) ON DELETE CASCADE
 );
 
+-- Create user table
 CREATE TABLE IF NOT EXISTS users (
 	user_id INT AUTO_INCREMENT PRIMARY KEY,
 	user_name VARCHAR(50) NOT NULL UNIQUE,
 	user_password VARCHAR(255) NOT NULL,
 	user_creation_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create_meta_table
+CREATE TABLE IF NOT EXISTS site_meta (
+	meta_id INT PRIMARY KEY AUTO_INCREMENT,
+	meta_key VARCHAR(255) UNIQUE NOT NULL,
+	meta_data JSON NOT NULL,
+	last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE or Replace view `VV.category` AS
@@ -48,6 +58,10 @@ CREATE or Replace view `VV.image` AS
 CREATE or Replace view `VV.users` AS
 	SELECT user_id, user_name, user_password, user_creation_time
 	FROM users;
+
+CREATE OR REPLACE VIEW `VV.site_meta` AS
+	SELECT meta_id, meta_key, meta_data, last_updated
+	FROM site_meta;
 
 DELETE from category;
 DELETE from project;

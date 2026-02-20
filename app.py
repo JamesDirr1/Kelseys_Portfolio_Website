@@ -3,7 +3,7 @@ from flask import Flask, request, redirect, flash, abort, render_template
 import time, logging, os
 from mysql_connections.mysql_Root import Root
 from mysql_connections.mysql_view_user import View_User
-from utility_classes import custom_logger
+from utility_classes.custom_logger import log
 from routes.route_category import category_routes
 from routes.route_project import project_routes
 from routes.route_image import image_routes
@@ -13,10 +13,11 @@ from dotenv import load_dotenv
 from data_classes.category import Category
 from werkzeug.routing import BaseConverter
 
+
 load = load_dotenv(override=True)
 
 from config.flask.config import Config
- 
+
 
 def create_app():
     app = Flask(__name__)
@@ -24,6 +25,7 @@ def create_app():
     app.secret_key = app.config['SECRET_KEY']
 
     app.url_map.converters['hyphen'] = HyphenConverter
+
 
     app.register_blueprint(category_routes, url_prefix='/portfolio')
     app.register_blueprint(project_routes, url_prefix='/portfolio')
@@ -47,43 +49,48 @@ app = create_app()
 
 
 def database_setup():
-    app.logger.info("---- Database Setup ----")
+    logger = log("DB SETUP")
+    logger.info("---- Database Setup ----")
     Root_user= Root() #Creates MYSQL Root user
-    app.logger.info("Root user created")
-    app.logger.info("Checking if database is ready")
+    logger.info("Root user created")
+    logger.info("Checking if database is ready")
     connection = False 
     while connection == False: #Loops every 30 seconds and uses Root_user to try to connect to the database and make sure its ready to go.
         try: 
             connection = Root_user.try_connection()
         except Exception as e:
-            app.logger.error(f"----Could not connect to the database----\n {e}")
+            logger.error(f"----Could not connect to the database----\n {e}")
         if connection:
-           break
+            break
         else:
-           time.sleep(5)
-    app.logger.info("---- Connection established ----")
+            time.sleep(5)
+    logger.info("---- Connection established ----")
 
     try:
-        Root_user.create_users() #Creates users for the database that will be used later in the app.
+        Root_user.create_db_users() #Creates users for the database that will be used later in the app.
     except Exception as e: 
-        app.logger.critical(f"----Could not create users----\n {e}")
+        logger.critical(f"----Could not create users----\n {e}")
+        connection = False
 
     try:
         Root_user.add_admin_user() #Creates users for the database that will be used later in the app.
     except Exception as e: 
-        app.logger.critical(f"----Could not create admin user----\n {e}")
+        logger.critical(f"----Could not create admin user----\n {e}")
+        connection = False
     
     try:
         Root_user.create_test_data()
     except Exception as e:
-        app.logger.debug(f"Could not create test data: {e}")
+        logger.debug(f"Could not create test data: {e}")
+        connection = False
+    return connection
 
 def category_list():
     view_user = View_User()
     cat_list = view_user.get_all_categories()
     cat_total = len(cat_list)
     cat_list.append(Category("About", 0, cat_total + 1))
-    app.logger.debug(f"Category list: {cat_list}")
+    logger.debug(f"Category list: {cat_list}")
     return (cat_list)
 
 with app.app_context():
@@ -94,7 +101,7 @@ with app.app_context():
     ],
     format='%(asctime)s %(levelname)-8s| %(message)s'
 )
-    logger = custom_logger.log("MAIN")
+    logger = log("MAIN")
 
     logger.info("---- APP STARTING ----")
 

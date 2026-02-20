@@ -53,7 +53,7 @@ def test_project_create_from_dict_success():
 
     mock_image = MagicMock()
 
-    with patch("utility_classes.custom_logger.log") as mock_logger, patch(
+    with patch("data_classes.project.log") as mock_logger, patch(
         "data_classes.image.Image.from_project_dict", return_value=mock_image
     ):
         mock_logger.return_value.debug = MagicMock()
@@ -82,7 +82,7 @@ def test_project_create_from_dict_success_no_image():
         "project_image_id": 3,
     }
 
-    with patch("utility_classes.custom_logger.log") as mock_logger:
+    with patch("data_classes.project.log") as mock_logger:
         mock_logger.return_value.debug = MagicMock()
         proj = Project.from_dict(data)
 
@@ -108,7 +108,7 @@ def test_project_create_from_dict_success_no_image_id():
         "category_id": 2,
     }
 
-    with patch("utility_classes.custom_logger.log") as mock_logger:
+    with patch("data_classes.project.log") as mock_logger:
         mock_logger.return_value.debug = MagicMock()
         proj = Project.from_dict(data)
 
@@ -133,7 +133,7 @@ def test_project_create_from_dict_missing_key():
         "category_id": 2,
     }
 
-    with patch("utility_classes.custom_logger.log") as mock_logger:
+    with patch("data_classes.project.log") as mock_logger:
         mock_logger.return_value.debug = MagicMock()
 
         with pytest.raises(KeyError) as exc_info:
@@ -154,7 +154,7 @@ def test_project_create_from_dict_value_error():
         "category_id": 2,
     }
 
-    with patch("utility_classes.custom_logger.log") as mock_logger:
+    with patch("data_classes.project.log") as mock_logger:
         mock_logger.return_value.debug = MagicMock()
 
         with pytest.raises(ValueError) as exc_info:
@@ -176,7 +176,7 @@ def test_project_create_from_dict_image_error():
         "image_URL": "some.url",
     }
 
-    with patch("utility_classes.custom_logger.log") as mock_logger, patch(
+    with patch("data_classes.project.log") as mock_logger, patch(
         "data_classes.image.Image.from_project_dict", side_effect=Exception("some image error")
     ):
         mock_logger.return_value.debug = MagicMock()

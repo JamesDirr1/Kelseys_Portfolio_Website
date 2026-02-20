@@ -1,101 +1,34 @@
 import os
-import time
-
-import pymysql
-from dotenv import load_dotenv
-from pymysql.cursors import DictCursor
+from typing import Optional, Tuple
 from werkzeug.security import check_password_hash
-
-import utility_classes.custom_logger
+from mysql_connections.mysql_base import MySQLBase
 from data_classes.category import Category
 from data_classes.image import Image
 from data_classes.project import Project
 from data_classes.user import User
 
-# MySQL class that acts as the view user for executing MYSQL queries that are limited to the database views.
-# Uses PyMySQL to execute queries.
 
+class View_User(MySQLBase):
+    """Class for interacting with the MySQL database with view(read) only permissions"""
 
-class View_User:
+    def __init__(self):
+        """Creates View user class with set functions to execute set queries to get data from the database.
+        Inherits from the MySQLBase class"""
+        user = os.getenv("MYSQL_VIEW_USER")
+        password = os.getenv("MYSQL_VIEW_USER_PASSWORD")
+        super().__init__(user, password, "VIEW_USER")
 
-    def __init__(  # Load .env file and set variables need to connect to the mysql database as the View_user.
-        self,
-    ):
-        load_dotenv
-        self.host = os.getenv("MYSQL_HOST")
-        self.port = int(os.getenv("MYSQL_PORT", 3306))
-        self.user = os.getenv("MYSQL_VIEW_USER")
-        self.password = os.getenv("MYSQL_VIEW_USER_PASSWORD")
-        self.db = os.getenv("MYSQL_DB")
-        self.logger = utility_classes.custom_logger.log("VIEW_USER")
+    def get_all_categories(self, ordered: bool = True) -> list[Category]:
+        """Returns a list of all Categories from the database or an empty list if none are found.
 
-    def create_connection(  # Function that creates a PyMySQL connection using the variables outlined above.
-        self,
-    ):
-        self.logger.info(f"Creating connection to: {self.host}")
+        :param ordered: (Default: True) If true returns Categories stored by category_order.
+        :type ordered: Bool
+        :return: A list of category objects that can be empty.
+        :rtype: List[Category]
+        :raises Exception: If there is any error in getting the list of categories from the database.
+        """
         try:
-            connection = pymysql.connect(
-                host=self.host,
-                port=self.port,
-                user=self.user,
-                password=self.password,
-                database=self.db,
-                cursorclass=DictCursor,
-            )
-            self.logger.info("Connection created")
-            return connection
-        except pymysql.MySQLError as e:
-            self.logger.error(f"Connection failed, could not create connection: {e}")
-            raise  # re-raise so it still fails in calling function
-        except Exception as e:
-            self.logger.error(f"Unexpected error, could not create connection: {e}")
-            raise
-
-    def fetch_all(  # Function uses provided query to query the database
-        self, query, args=None
-    ):
-        self.logger.con_open
-        start_time = time.time()
-        results = None
-        connection = None
-        cursor = None
-        try:
-            connection = self.create_connection()
-            with connection.cursor() as cursor:
-                if args is None:
-                    self.logger.debug("args are null")
-                    cursor.execute(query)
-                else:
-                    self.logger.debug(f"args: {args}")
-                    cursor.execute(query, args)
-                results = cursor.fetchall()
-                self.logger.query(query, f"{results}")
-        except pymysql.MySQLError as e:
-            self.logger.error(f"Unable to complete: {query}. MySQL error: {e}")
-            raise
-        except Exception as e:
-            self.logger.error(
-                f"Unexpected error when fetching data from the database: {e}"
-            )
-            raise
-        finally:
-            if cursor:
-                cursor.close()
-            if connection:
-                connection.close()
-            end_time = time.time() - start_time
-            self.logger.con_close(end_time)
-        if results is not None and len(results) == 0:
-            results = None
-        self.logger.debug(f"Results: {results}")
-        return results
-
-    def get_all_categories(  # Function that attempts to query the database to get list of all categories.
-        self, ordered=True
-    ):
-        try:
-            categories = []
-            if ordered:  # If true get categories ordered by ASC on category_order
+            if ordered:
                 self.logger.info("Getting all categories - Sorted")
                 query = (
                     "SELECT * FROM Portfolio.`VV.category` ORDER BY category_order ASC;"
@@ -104,6 +37,7 @@ class View_User:
                 self.logger.info("Getting all categories")
                 query = "SELECT * FROM Portfolio.`VV.category`;"
             results = self.fetch_all(query)
+            categories: list[Category] = []
             if results is not None:
                 for result in results:
                     try:
@@ -118,9 +52,15 @@ class View_User:
             self.logger.error(f"Failed to get categories: {e}")
             raise Exception(f"Failed to get categories: {e}")
 
-    def get_category_by_title(  # Function that attempts to query the database to get a list of all categories.
-        self, title
-    ):
+    def get_category_by_title(self, title: str) -> Optional[Category]:
+        """Returns Categories object if one with the same title provided is found in the database, otherwise returns None.
+
+        :param title: Title of Category to pull from database.
+        :type title: str
+        :return: Category object from the database with from the provided title.
+        :rtype: Category or None
+        :raises Exception: If there is any error in getting the category from the database.
+        """
         try:
             category = None
             self.logger.info(f"Getting category by {title}")
@@ -142,9 +82,13 @@ class View_User:
             self.logger.error(f"Failed to get category '{title}': {e}")
             raise Exception(f"Failed to get category '{title}': {e}")
 
-    def get_all_projects(  # Function that attempts to query the database to get list of all projects.
-        self,
-    ):
+    def get_all_projects(self) -> list[Project]:
+        """Returns a list of all Projects from the database or an empty list if none are found.
+
+        :return: A list of Project objects can be empty.
+        :rtype: List[Project]
+        :raises Exception: If there is any error in getting projects from the database.
+        """
         try:
             self.logger.info("Getting all projects")
             query = "SELECT * FROM Portfolio.`VV.project`;"
@@ -164,11 +108,19 @@ class View_User:
             self.logger.error(f"Failed to get all projects: {e}")
             raise Exception(f"Failed to get all projects: {e}")
 
-    def get_projects_by_category(
-        self, id, ordered=True
-    ):  # Function that attempts to query the database to get a list of projects for a specific category by ID
+    def get_projects_by_category(self, id: int, ordered: bool = True) -> list[Project]:
+        """Returns a list of all Projects from the database from provided Category or an empty list if none are found.
+
+        :param id: ID of parent category.
+        :type id: int
+        :param ordered: (Default: True) If true returns Projects stored by project_date.
+        :type ordered: bool
+        :return: A list of Project objects can be empty.
+        :rtype: List[Project]
+        :raises Exception: If there is any error in getting projects from the database.
+        """
         try:
-            args = [f"{id}"]
+            args = [id]
             if ordered:  # If true get project order by ASC on project date
                 self.logger.info(f"Getting all projects from category {id} - Sorted")
                 query = "Select * from `VV.project` as project left join `VV.image` as image on project.project_image_id = image.image_id WHERE category_id = %s ORDER BY project_date ASC;"
@@ -192,10 +144,18 @@ class View_User:
             raise Exception(f"Failed to get projects from category {id}: {e}")
 
     def get_projects_by_category_title(
-        self, title, ordered=True
-    ) -> (
-        list
-    ):  # Function that attempts to query the database to get a list of projects for a specific category by title
+        self, title: str, ordered: bool = True
+    ) -> list[Project]:
+        """Returns a list of all Projects from the database from provided Category or an empty list if none are found.
+
+        :param tile: Title of the parent category.
+        :type title: str
+        :param ordered: (Default: True) If true returns Projects stored by project_date.
+        :type ordered: Bool
+        :return: A list of Project objects can be empty.
+        :rtype: List[Project]
+        :raises Exception: If there is any error in getting projects from the database.
+        """
         try:
             args = [title]
             if ordered:  # If true get project order by ASC on project date
@@ -222,9 +182,15 @@ class View_User:
             self.logger.error(f"Failed to get projects from category {title}: {e}")
             raise Exception(f"Failed to get projects from category {title}: {e}")
 
-    def get_project(
-        self, id
-    ):  # Function that attempts to query the database to get specific project by ID
+    def get_project(self, id: int) -> Optional[Project]:
+        """Returns a Project object if one with the same id provided is found in the database, otherwise returns None.
+
+        :param id: Id of project.
+        :type id: int
+        :return:  A project object of the same ID from the database.
+        :rtype: Project or None
+        :raises Exception: If there is any error in getting the project from the database.
+        """
         try:
             project = None
             args = [f"{id}"]
@@ -244,9 +210,17 @@ class View_User:
             self.logger.error(f"Failed to get project by id {id}: {e}")
             raise Exception(f"Failed to get project by id {id}: {e}")
 
-    def get_project_by_title(
-        self, project_title, category_title
-    ):  # Function that attempts to query the database to get specific project by title and category
+    def get_project_by_title(self, project_title: str, category_title: str):
+        """Returns a Project object if one with the same title provided and category title is found in the database. Otherwise returns None.
+
+        :param project_title: Title of project.
+        :type project_title: str
+        :param category_title: Title of the category the project should be in.
+        :type category_title: str
+        :return:  A project object of the same title from the database.
+        :rtype: Project or None
+        :raises Exception: If there is any error in getting the project from the database.
+        """
         try:
             project = None
             args = [category_title, project_title]
@@ -272,9 +246,13 @@ class View_User:
                 f"Failed to get project {project_title} in category {category_title}: {e}"
             )
 
-    def get_all_images(
-        self,
-    ):  # Function that attempts to query the database to get list of all images
+    def get_all_images(self) -> list[Image]:
+        """Returns a list of all Images from the database or an empty list if none are found.
+
+        :return:  A list of Image objects can be empty.
+        :rtype: list[Image]
+        :raises Exception: If there is any error in getting Images from the database.
+        """
         try:
             self.logger.info("Getting all images")
             query = "SELECT * FROM Portfolio.`VV.image`;"
@@ -292,9 +270,15 @@ class View_User:
             self.logger.error(f"Failed to get all images: {e}")
             raise Exception(f"Failed to get all images: {e}")
 
-    def get_project_images(
-        self, id
-    ):  # Function that attempts to query the database to get a list of images for a specific project by project ID
+    def get_project_images(self, id: int) -> list[Image]:
+        """Returns a list of all Images for a specific project base on project id or an empty list if none are found.
+
+        :param id: ID of project
+        :type id: Int
+        :return:  A list of Image objects can be empty.
+        :rtype: list[Image]
+        :raises Exception: If there is any error in getting Images from the database.
+        """
         try:
             args = [f"{id}"]
             self.logger.info(f"Getting all images for project id {id}")
@@ -313,9 +297,15 @@ class View_User:
             self.logger.error(f"Failed to get all images by project id {id}: {e}")
             raise Exception(f"Failed to get all images by project id {id}: {e}")
 
-    def get_image(
-        self, id
-    ):  # Function that attempts to query the database to get specific image by ID
+    def get_image(self, id: int) -> Optional[Image]:
+        """Returns a Image object if one with the same id provided is found in the database, otherwise returns None.
+
+        :param id: ID of Image
+        :type id: Int
+        :return:  A image object with the same ID from the database.
+        :rtype: Image or None
+        :raises Exception: If there is any error in getting the Image from the database.
+        """
         try:
             image = None
             args = [f"{id}"]
@@ -334,52 +324,43 @@ class View_User:
             raise Exception(f"Failed to get image by id {id}: {e}")
 
     def check_user_exist_and_password(
-        self, user_name, user_password
-    ):  # Function that attempts to query a data base for a specific user and if their password matches
+        self, user_name: str, user_password: str
+    ) -> Tuple[bool, bool]:
+        """Returns a bool value for if the provided user name or password exists and matches in the database.
+
+        :param user_name: username to check.
+        :type user_name: str
+        :param user_password: users password that is hashed and compared to hashed password from database.
+        :type user_password: str
+        :return:  A tuple of two bool values the first for user name the second for password.
+        :rtype: Tuple[bool, bool]
+        :raises Exception: If there is any error in getting the user from the database.
+        """
         name_match = False
         password_match = False
-        self.logger.con_open
-        start_time = time.time()
-        connection = None
-        cursor = None
         query = "SELECT * FROM `VV.users` WHERE user_name=%s"
         try:
-            connection = self.create_connection()
-            with connection.cursor() as cursor:
-                self.logger.info(f"Checking if username '{user_name}' exist")
-                cursor.execute(query, user_name)
-                result = cursor.fetchone()
-                self.logger.debug(f"USER RESULTS {result}")  ###DONT USE IN PROD###
+            self.logger.info(f"Checking if username '{user_name}' exist")
+            result = self.fetch_all_sensitive(query, user_name)
+            if result is None:
+                self.logger.info(f"Unable to find username '{user_name}'")
+                return (name_match, password_match)
+            try:
+                db_user = User.from_dict(result[0])  # creates user from query data
+            except Exception as e:
+                self.logger.error(f"Unable to create user '{user_name}': {e}")
+                e.args = (f"Unable to create user '{user_name}': {e}",)
+                raise
 
-                if result is None:
-                    self.logger.info(f"Unable to find username '{user_name}'")
-                    return (name_match, password_match)
-                try:
-                    db_user = User.from_dict(result)
-                except Exception as e:
-                    self.logger.error(f"Unable to create user {user_name}: {e}")
-                    e.args = (f"Unable to create user {user_name}: {e}",)
-                    raise
-
-                if db_user.user_name == user_name:
-                    name_match = True
-                    # Compares password to hash
-                    self.logger.info(f"Checking if username '{user_name}' entered password matches hashed")
-                    if check_password_hash(db_user.user_password, user_password):
-                        password_match = True
-        except pymysql.MySQLError as e:
-            self.logger.error(f"Unable to complete: {query}. MySQL error: {e}")
-            raise
+            if db_user.user_name == user_name:
+                name_match = True
+                # Compares password to hash
+                self.logger.info(
+                    f"Checking if username '{user_name}' entered password matches hashed"
+                )
+                if check_password_hash(db_user.user_password, user_password):
+                    password_match = True
         except Exception as e:
-            self.logger.error(
-                f"Unexpected error when trying to get user login: {e}"
-            )
-            raise Exception ("Unable to validate user at this time")
-        finally:
-            if cursor:
-                cursor.close()
-            if connection:
-                connection.close()
-            end_time = time.time() - start_time
-            self.logger.con_close(end_time)
+            self.logger.error(f"Unexpected error when trying to get user login: {e}")
+            raise Exception("Unable to validate user at this time")
         return (name_match, password_match)
