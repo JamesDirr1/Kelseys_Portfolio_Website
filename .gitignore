@@ -5,3 +5,5 @@
 .vscode/settings.json
 .coverage
 .vscode/settings.json
+.venv/Lib/site-packages/_distutils_hack/__pycache__/__init__.cpython-311.pyc
+.venv/Scripts/python.exe
