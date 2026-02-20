@@ -46,7 +46,7 @@ def test_image_create_from_dict_success():
         "image_weight": 2,
         "project_id": 3,
     }
-    with patch("utility_classes.custom_logger.log") as mock_logger:
+    with patch("data_classes.image.log") as mock_logger:
         mock_logger.return_value.debug = MagicMock()
         img = Image.from_dict(data)
 
@@ -71,7 +71,7 @@ def test_image_create_from_dict_missing_key():
         "project_id": 3,
     }
 
-    with patch("utility_classes.custom_logger.log") as mock_logger:
+    with patch("data_classes.image.log") as mock_logger:
         mock_logger.return_value.error = MagicMock()
 
         with pytest.raises(KeyError) as exc_info:
@@ -93,7 +93,7 @@ def test_image_create_from_dict_value_error():
         "project_id": 3,
     }
 
-    with patch("utility_classes.custom_logger.log") as mock_logger:
+    with patch("data_classes.image.log") as mock_logger:
         mock_logger.return_value.error = MagicMock()
 
         with pytest.raises(ValueError) as exc_info:
@@ -115,7 +115,7 @@ def test_image_create_from_dict_unexpected_error():
         "project_id": 3,
     }
 
-    with patch("utility_classes.custom_logger.log") as mock_logger, patch.object(
+    with patch("data_classes.image.log") as mock_logger, patch.object(
         Image, "__init__", side_effect=Exception("Unexpected")
     ):
         mock_logger.return_value.error = MagicMock()
@@ -145,7 +145,7 @@ def test_image_create_from_project_dict_success():
         "image.project_id": 1,
     }
 
-    with patch("utility_classes.custom_logger.log") as mock_logger:
+    with patch("data_classes.image.log") as mock_logger:
         mock_logger.return_value.debug = MagicMock()
         img = Image.from_project_dict(data)
 
@@ -177,7 +177,7 @@ def test_image_create_from_project_dict_null_image():
         "image.project_id": 1,
     }
 
-    with patch("utility_classes.custom_logger.log") as mock_logger:
+    with patch("data_classes.image.log") as mock_logger:
         mock_logger.return_value.debug = MagicMock()
         img = Image.from_project_dict(data)
 
@@ -210,7 +210,7 @@ def test_image_create_from_project_dict_missing_key():
         "image_weight": 1,
     }
 
-    with patch("utility_classes.custom_logger.log") as mock_logger:
+    with patch("data_classes.image.log") as mock_logger:
         mock_logger.return_value.error = MagicMock()
 
         with pytest.raises(KeyError) as exc_info:
@@ -238,7 +238,7 @@ def test_image_create_from_project_dict_value_error():
         "image.project_id": 1,
     }
 
-    with patch("utility_classes.custom_logger.log") as mock_logger:
+    with patch("data_classes.image.log") as mock_logger:
         mock_logger.return_value.error = MagicMock()
 
         with pytest.raises(ValueError) as exc_info:
@@ -265,7 +265,7 @@ def test_image_create_from_project_dict_unexpected_error():
         "image.project_id": 1,
     }
 
-    with patch("utility_classes.custom_logger.log") as mock_logger, patch.object(
+    with patch("data_classes.image.log") as mock_logger, patch.object(
         Image, "__init__", side_effect=Exception("Unexpected")
     ):
         mock_logger.return_value.error = MagicMock()

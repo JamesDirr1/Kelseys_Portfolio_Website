@@ -30,7 +30,7 @@ def test_category_create_with_defaults():
 
 def test_category_create_from_dict_success():
     data = {"category_id": 1, "category_title": "Title", "category_order": 2}
-    with patch("utility_classes.custom_logger.log") as mock_logger:
+    with patch("data_classes.category.log") as mock_logger:
         mock_logger.return_value.debug = MagicMock()
         cat = Category.from_dict(data)
 
@@ -46,7 +46,7 @@ def test_category_create_from_dict_success():
 def test_category_create_from_dict_missing_key():
     data = {"category_id": 1, "category_order": 2}
 
-    with patch("utility_classes.custom_logger.log") as mock_logger:
+    with patch("data_classes.category.log") as mock_logger:
         mock_logger.return_value.error = MagicMock()
 
         with pytest.raises(KeyError) as exc_info:
@@ -61,7 +61,7 @@ def test_category_create_from_dict_missing_key():
 def test_category_create_from_dict_type_error():
     data = {"category_id": "one", "category_title": "Title", "category_order": 2}
 
-    with patch("utility_classes.custom_logger.log") as mock_logger:
+    with patch("data_classes.category.log") as mock_logger:
         mock_logger.return_value.error = MagicMock()
 
         with pytest.raises(ValueError) as exc_info:
@@ -76,7 +76,7 @@ def test_category_create_from_dict_type_error():
 def test_category_create_from_dict_unexpected_exception():
     data = {"category_id": 1, "category_title": "Title", "category_order": 2}
 
-    with patch("utility_classes.custom_logger.log") as mock_logger, patch.object(
+    with patch("data_classes.category.log") as mock_logger, patch.object(
         Category, "__init__", side_effect=Exception("Unexpected")
     ):
         mock_logger.return_value.error = MagicMock()

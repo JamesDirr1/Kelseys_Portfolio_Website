@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any, Dict, Optional
 
-import utility_classes.custom_logger
+from utility_classes.custom_logger import log
 from data_classes.image import Image
 
 # Data class that represents the columns from the project table.
@@ -20,7 +20,7 @@ class Project:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Project":
-        logger = utility_classes.custom_logger.log("DATA")
+        logger = log("DATA")
         logger.debug(f"Attempting to create Project: {data}")
         try:
             # Handle optional image creation

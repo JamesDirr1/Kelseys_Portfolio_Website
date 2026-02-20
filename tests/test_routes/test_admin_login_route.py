@@ -63,21 +63,6 @@ def test_require_login_bad_username(test_login_client_and_mocks):
     assert b"Invalid credentials" in response.data
 
 
-def test_require_login_bad_password(test_login_client_and_mocks):
-    client, mock_view_user = test_login_client_and_mocks
-
-    mock_view_user.check_user_exist_and_password.return_value = (True, False)
-
-    response = client.post(
-        "/admin/login",
-        data={"username": "testuser", "password": "badpass"},
-        follow_redirects=True,
-    )
-
-    assert response.request.path == "/admin/login"
-    assert response.status_code == 200
-    assert b"Invalid credentials" in response.data
-
 
 def test_require_login_bad_password(test_login_client_and_mocks):
     client, mock_view_user = test_login_client_and_mocks

@@ -1,5 +1,3 @@
-version: '3.4'
-
 services:
   kelseysportfoliowebsite:
     image: kelseysportfoliowebsite
@@ -22,6 +20,8 @@ services:
       MYSQL_VIEW_USER_PASSWORD: ${MYSQL_VIEW_USER_PASSWORD}
       MYSQL_DB: ${MYSQL_DB}
       FLASK_KEY: ${FLASK_KEY}
+      FLASK_LOG: ${FLASK_LOG}
+      FLASK_ENVIRONMENT: ${FLASK_ENVIRONMENT}
       ADMIN_USERNAME: ${ADMIN_USERNAME}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       PYTHONUNBUFFERED: 1
@@ -33,9 +33,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DB}
-      MYSQL_USER: ${MYSQL_ROOT_USER}
-      MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_ROOT: ${MYSQL_ROOT}
+      MYSQL_USER: ${MYSQL_ADMIN_USER}
+      MYSQL_PASSWORD: ${MYSQL_ADMIN_PASSWORD}
     networks:
       - WebServerNetwork
     volumes:

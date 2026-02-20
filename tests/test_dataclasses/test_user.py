@@ -33,7 +33,7 @@ def test_user_create_with_defaults():
 
 def test_user_create_from_dict_success():
     data = {"user_id": 1, "user_name": "Test Name", "user_password": "secret"}
-    with patch("utility_classes.custom_logger.log") as mock_logger:
+    with patch("data_classes.user.log") as mock_logger:
         mock_logger.return_value.debug = MagicMock()
         user = User.from_dict(data)
 
@@ -49,7 +49,7 @@ def test_user_create_from_dict_success():
 
 def test_user_create_from_dict_missing_key():
     data = {"user_name": "Test Name", "user_password": "secret"}
-    with patch("utility_classes.custom_logger.log") as mock_logger:
+    with patch("data_classes.user.log") as mock_logger:
         mock_logger.return_value.debug = MagicMock()
 
         with pytest.raises(KeyError) as exc_info:
@@ -63,7 +63,7 @@ def test_user_create_from_dict_missing_key():
 
 def test_user_create_from_dict_type_error():
     data = {"user_id": "not a num", "user_name": "Test Name", "user_password": "secret"}
-    with patch("utility_classes.custom_logger.log") as mock_logger:
+    with patch("data_classes.user.log") as mock_logger:
         mock_logger.return_value.debug = MagicMock()
 
         with pytest.raises(ValueError) as exc_info:
@@ -77,7 +77,7 @@ def test_user_create_from_dict_type_error():
 
 def test_user_create_from_dict_unexpected_exception():
     data = {"user_id": 1, "user_name": "Test Name", "user_password": "secret"}
-    with patch("utility_classes.custom_logger.log") as mock_logger, patch.object(
+    with patch("data_classes.user.log") as mock_logger, patch.object(
         User, "__init__", side_effect=Exception("Unexpected")
     ):
         mock_logger.return_value.debug = MagicMock()
