@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
-
-import utility_classes.custom_logger
+from utility_classes.custom_logger import log
 
 # Data class that represents the columns from the image table.
 
@@ -19,7 +18,7 @@ class Image:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Image":
-        logger = utility_classes.custom_logger.log("DATA")
+        logger = log("DATA")
         logger.debug(f"Attempting to create Image: {data}")
         try:
             image = cls(
@@ -48,7 +47,7 @@ class Image:
 
     @classmethod
     def from_project_dict(cls, data: Dict[str, Any]) -> "Image":
-        logger = utility_classes.custom_logger.log("DATA")
+        logger = log("DATA")
         logger.debug(f"Attempting to create Image from Project data: {data}")
         try:
             if data.get("project_image_id") is None:

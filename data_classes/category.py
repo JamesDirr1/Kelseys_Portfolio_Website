@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
-import utility_classes.custom_logger
+from utility_classes.custom_logger import log
 
 # Data class that represents the columns from the category table.
 
@@ -14,7 +14,7 @@ class Category:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Category":
-        logger = utility_classes.custom_logger.log("DATA")
+        logger = log("DATA")
         logger.debug(f"Attempting to create Category: {data}")
         try:
             category = cls(
