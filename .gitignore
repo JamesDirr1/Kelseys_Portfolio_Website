@@ -1,7 +1,20 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
 
+# Virtual environment
+.venv/
+
+# IDEs
+.vscode/
+*.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Env files
 .env
-.vscode
-.venv
-.vscode/settings.json
+
+# Coverage and test reports
 .coverage
 .vscode/settings.json

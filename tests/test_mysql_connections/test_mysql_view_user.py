@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 
 # MySQL connection testing
-@patch("mysql_connections.mysql_view_user.utility_classes.custom_logger.log")
+@patch("mysql_connections.mysql_base.log")
 @patch("mysql_connections.mysql_view_user.os.getenv")
 def test_view_user_init(mock_getenv, mock_logger):
 
@@ -40,195 +40,6 @@ def test_view_user_init(mock_getenv, mock_logger):
     assert real_view_user.db == "portfolio_db"
     assert real_view_user.logger == mock_logger_instance
     mock_logger.assert_called_once_with("VIEW_USER")
-
-
-def test_view_user_create_connection_success():
-    with app.app_context():
-        view_user = View_User()
-
-        mock_connection = MagicMock()
-        with patch(
-            "mysql_connections.mysql_view_user.pymysql.connect",
-            return_value=mock_connection,
-        ) as mock_connect, patch.object(
-            view_user.logger, "info"
-        ) as mock_info_logger, patch.object(
-            view_user.logger, "error"
-        ) as mock_error_logger:
-
-            connection = view_user.create_connection()
-
-            mock_connect.assert_called_once_with(
-                host=view_user.host,
-                port=view_user.port,
-                user=view_user.user,
-                password=view_user.password,
-                database=view_user.db,
-                cursorclass=ANY,
-            )
-
-            assert connection == mock_connection
-            mock_info_logger.assert_any_call(
-                f"Creating connection to: {view_user.host}"
-            )
-            mock_info_logger.assert_any_call("Connection created")
-            mock_error_logger.assert_not_called()
-
-
-def test_view_user_create_connection_mysql_error():
-    with app.app_context():
-        view_user = View_User()
-
-        with patch(
-            "mysql_connections.mysql_view_user.pymysql.connect",
-            side_effect=MySQLError("Mocked MySQL failure"),
-        ), patch.object(view_user.logger, "error") as mock_error_logger:
-
-            with pytest.raises(MySQLError):
-                view_user.create_connection()
-
-            mock_error_logger.assert_called_with(
-                "Connection failed, could not create connection: Mocked MySQL failure"
-            )
-
-
-def test_view_user_create_connection_general_error():
-    with app.app_context():
-        view_user = View_User()
-
-        with patch(
-            "mysql_connections.mysql_view_user.pymysql.connect",
-            side_effect=RuntimeError("Mocked failure"),
-        ), patch.object(view_user.logger, "error") as mock_error_logger:
-
-            with pytest.raises(RuntimeError):
-                view_user.create_connection()
-
-            mock_error_logger.assert_called_with(
-                "Unexpected error, could not create connection: Mocked failure"
-            )
-
-
-# Mysql query testing
-def test_view_user_fetch_all_success():
-    with app.app_context():
-        mock_connection = MagicMock()
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = [{"id": 1, "name": "test"}]
-
-        mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
-
-        view_user = View_User()
-        view_user.create_connection = MagicMock(return_value=mock_connection)
-        view_user.logger = MagicMock()
-
-        results = view_user.fetch_all("SELECT * FROM test_table")
-
-        assert results == [{"id": 1, "name": "test"}]
-        view_user.logger.debug.assert_any_call("args are null")
-        mock_cursor.execute.assert_called_once()
-        view_user.logger.debug.assert_any_call("Results: [{'id': 1, 'name': 'test'}]")
-
-
-def test_view_user_fetch_all_success_with_args():
-    with app.app_context():
-        mock_connection = MagicMock()
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = [{"id": 1, "name": "test"}]
-
-        mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
-
-        view_user = View_User()
-        view_user.create_connection = MagicMock(return_value=mock_connection)
-        view_user.logger = MagicMock()
-
-        results = view_user.fetch_all(
-            "SELECT * FROM test_table WHERE name Like %s;", "test"
-        )
-
-        assert results == [{"id": 1, "name": "test"}]
-        view_user.logger.debug.assert_any_call("args: test")
-        mock_cursor.execute.assert_called_once()
-        view_user.logger.debug.assert_any_call("Results: [{'id': 1, 'name': 'test'}]")
-
-
-def test_view_user_fetch_all_empty_result():
-    with app.app_context():
-        mock_connection = MagicMock()
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = []
-
-        mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
-
-        view_user = View_User()
-        view_user.create_connection = MagicMock(return_value=mock_connection)
-        view_user.logger = MagicMock()
-
-        results = view_user.fetch_all("SELECT * FROM test_table")
-
-        assert results == None
-        mock_cursor.execute.assert_called_once()
-        view_user.logger.debug.assert_any_call("Results: None")
-
-
-def test_view_user_fetch_all_mysql_error():
-    with app.app_context():
-        view_user = View_User()
-
-        with patch.object(
-            view_user,
-            "create_connection",
-            side_effect=MySQLError("Mocked MySQL failure"),
-        ), patch.object(view_user.logger, "info"), patch.object(
-            view_user.logger, "error"
-        ) as mock_error, patch.object(
-            view_user.logger, "debug"
-        ), patch.object(
-            view_user.logger, "query"
-        ), patch.object(
-            view_user.logger, "con_open"
-        ), patch.object(
-            view_user.logger, "con_close"
-        ):
-
-            with pytest.raises(MySQLError):
-                view_user.fetch_all("bad query")
-
-            mock_error.assert_called_once()
-            logged_message = mock_error.call_args[0][0]
-            assert (
-                "Unable to complete: bad query. MySQL error: Mocked MySQL failure"
-                in logged_message
-            )
-
-
-def test_view_user_fetch_all_general_error():
-    with app.app_context():
-        view_user = View_User()
-
-        with patch.object(
-            view_user, "create_connection", side_effect=RuntimeError("Mocked failure")
-        ), patch.object(view_user.logger, "info"), patch.object(
-            view_user.logger, "error"
-        ) as mock_error, patch.object(
-            view_user.logger, "debug"
-        ), patch.object(
-            view_user.logger, "query"
-        ), patch.object(
-            view_user.logger, "con_open"
-        ), patch.object(
-            view_user.logger, "con_close"
-        ):
-
-            with pytest.raises(RuntimeError):
-                view_user.fetch_all("bad query")
-
-            mock_error.assert_called_once()
-            logged_message = mock_error.call_args[0][0]
-            assert (
-                "Unexpected error when fetching data from the database: Mocked failure"
-                in logged_message
-            )
 
 
 # Get all categories testing
@@ -1321,37 +1132,27 @@ def test_view_user_check_user_exist_and_password():
             {
                 "user_id": 1,
                 "user_name": "Test-Admin",
-                "user_password": "hashed password",
+                "user_password": "password",
                 "user_creation_time": "date",
             }
         ]
+        mock_user = MagicMock()
+        mock_user.user_name = "Test-Admin"
+        mock_user.user_password = "password"
 
         view_user = View_User()
-        mock_user_obj = MagicMock()
-        mock_user_obj.user_name = "Test-Admin"
-        mock_user_obj.user_password = "password"
+        view_user.fetch_all_sensitive = MagicMock(return_value=mock_result)
+        view_user.logger = MagicMock()
 
-        with patch.object(view_user, "create_connection"), patch.object(
-            view_user, "logger"
-        ), patch(
-            "mysql_connections.mysql_view_user.User.from_dict",
-            return_value=mock_user_obj,
-        ), patch(
+        with patch("data_classes.user.User.from_dict", return_value=mock_user), patch(
             "mysql_connections.mysql_view_user.check_password_hash", return_value=True
         ):
-            mock_cursor = MagicMock()
-            mock_cursor.fetchone.return_value = mock_result
-            mock_conn = MagicMock()
-            mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
-            view_user.create_connection.return_value = mock_conn
-
             name_match, password_match = view_user.check_user_exist_and_password(
                 "Test-Admin", "password"
             )
 
             assert name_match is True
             assert password_match is True
-            mock_cursor.execute.assert_called_once()
             view_user.logger.info.assert_any_call(
                 "Checking if username 'Test-Admin' exist"
             )
@@ -1359,44 +1160,25 @@ def test_view_user_check_user_exist_and_password():
 
 def test_view_user_check_user_exist_and_password_user_name_not_match():
     with app.app_context():
-        mock_result = [
-            {
-                "user_id": 1,
-                "user_name": "Test-Admin",
-                "user_password": "hashed password",
-                "user_creation_time": "date",
-            }
-        ]
+        mock_result = None
+        mock_user = MagicMock()
+        mock_user.user_name = "Test-Admin"
+        mock_user.user_password = "password"
 
         view_user = View_User()
-        mock_user_obj = MagicMock()
-        mock_user_obj.user_name = "test-Admin"
-        mock_user_obj.user_password = "password"
+        view_user.fetch_all_sensitive = MagicMock(return_value=mock_result)
+        view_user.logger = MagicMock()
 
-        with patch.object(view_user, "create_connection"), patch.object(
-            view_user, "logger"
-        ), patch(
-            "mysql_connections.mysql_view_user.User.from_dict",
-            return_value=mock_user_obj,
-        ), patch(
+        with patch("data_classes.user.User.from_dict", return_value=mock_user), patch(
             "mysql_connections.mysql_view_user.check_password_hash", return_value=True
         ):
-            mock_cursor = MagicMock()
-            mock_cursor.fetchone.return_value = mock_result
-            mock_conn = MagicMock()
-            mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
-            view_user.create_connection.return_value = mock_conn
-
             name_match, password_match = view_user.check_user_exist_and_password(
-                "Test-Admin", "password"
+                "bad_user", "password"
             )
 
             assert name_match is False
             assert password_match is False
-            mock_cursor.execute.assert_called_once()
-            view_user.logger.info.assert_any_call(
-                "Checking if username 'Test-Admin' exist"
-            )
+            view_user.logger.info.assert_any_call("Unable to find username 'bad_user'")
 
 
 def test_view_user_check_user_exist_and_password_password_not_match():
@@ -1405,74 +1187,29 @@ def test_view_user_check_user_exist_and_password_password_not_match():
             {
                 "user_id": 1,
                 "user_name": "Test-Admin",
-                "user_password": "hashed password",
+                "user_password": "password",
                 "user_creation_time": "date",
             }
         ]
+        mock_user = MagicMock()
+        mock_user.user_name = "Test-Admin"
+        mock_user.user_password = "password"
 
         view_user = View_User()
-        mock_user_obj = MagicMock()
-        mock_user_obj.user_name = "Test-Admin"
-        mock_user_obj.user_password = "password"
+        view_user.fetch_all_sensitive = MagicMock(return_value=mock_result)
+        view_user.logger = MagicMock()
 
-        with patch.object(view_user, "create_connection"), patch.object(
-            view_user, "logger"
-        ), patch(
-            "mysql_connections.mysql_view_user.User.from_dict",
-            return_value=mock_user_obj,
-        ), patch(
+        with patch("data_classes.user.User.from_dict", return_value=mock_user), patch(
             "mysql_connections.mysql_view_user.check_password_hash", return_value=False
         ):
-            mock_cursor = MagicMock()
-            mock_cursor.fetchone.return_value = mock_result
-            mock_conn = MagicMock()
-            mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
-            view_user.create_connection.return_value = mock_conn
-
             name_match, password_match = view_user.check_user_exist_and_password(
-                "Test-Admin", "password"
+                "Test-Admin", "bad password"
             )
 
             assert name_match is True
             assert password_match is False
-            mock_cursor.execute.assert_called_once()
             view_user.logger.info.assert_any_call(
                 "Checking if username 'Test-Admin' entered password matches hashed"
-            )
-
-
-def test_view_user_check_user_exist_and_password_return_none():
-    with app.app_context():
-        mock_result = None
-
-        view_user = View_User()
-        mock_user_obj = MagicMock()
-        mock_user_obj.user_name = "Test-Admin"
-        mock_user_obj.user_password = "password"
-
-        with patch.object(view_user, "create_connection"), patch.object(
-            view_user, "logger"
-        ), patch(
-            "mysql_connections.mysql_view_user.User.from_dict",
-            return_value=mock_user_obj,
-        ), patch(
-            "mysql_connections.mysql_view_user.check_password_hash", return_value=True
-        ):
-            mock_cursor = MagicMock()
-            mock_cursor.fetchone.return_value = mock_result
-            mock_conn = MagicMock()
-            mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
-            view_user.create_connection.return_value = mock_conn
-
-            name_match, password_match = view_user.check_user_exist_and_password(
-                "Test-Admin", "password"
-            )
-
-            assert name_match is False
-            assert password_match is False
-            mock_cursor.execute.assert_called_once()
-            view_user.logger.info.assert_any_call(
-                "Checking if username 'Test-Admin' exist"
             )
 
 
@@ -1481,49 +1218,36 @@ def test_view_user_check_user_exist_and_password_failed_user_creation():
         mock_result = [
             {
                 "user_id": 1,
-                "user_name": "Test-Admin",
-                "user_password": "bad password",
+                "user_name": 1,
+                "user_password": "password",
                 "user_creation_time": "date",
             }
         ]
-
         view_user = View_User()
-        mock_user_obj = MagicMock()
-        mock_user_obj.user_name = "Test-Admin"
-        mock_user_obj.user_password = "password"
+        view_user.fetch_all_sensitive = MagicMock(return_value=mock_result)
+        view_user.logger = MagicMock()
 
-        with patch.object(view_user, "create_connection"), patch.object(
-            view_user, "logger"
-        ), patch(
-            "mysql_connections.mysql_view_user.User.from_dict",
-            side_effect=ValueError("Invalid password"),
-        ), patch(
-            "mysql_connections.mysql_view_user.check_password_hash", return_value=True
+        with patch(
+            "data_classes.user.User.from_dict", side_effect=Exception("Bad data")
         ):
-            mock_cursor = MagicMock()
-            mock_cursor.fetchone.return_value = mock_result
-            mock_conn = MagicMock()
-            mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
-            view_user.create_connection.return_value = mock_conn
-
             with pytest.raises(Exception):
-                view_user.check_user_exist_and_password("Test-Admin", "password")
-            mock_cursor.execute.assert_called_once()
+                view_user.check_user_exist_and_password(1, "password")
             view_user.logger.error.assert_any_call(
-                "Unexpected error when trying to get user login: Unable to create user Test-Admin: Invalid password"
+                "Unexpected error when trying to get user login: Unable to create user '1': Bad data"
             )
 
 
 def test_view_user_check_user_exist_and_password_failed_sql():
     with app.app_context():
         view_user = View_User()
-        with patch(
-            "mysql_connections.mysql_view_user.pymysql.connect",
-            side_effect=MySQLError("Mocked MySQL failure"),
-        ), patch.object(view_user.logger, "error") as mock_error_logger:
-
-            with pytest.raises(pymysql.MySQLError):
+        view_user.logger = MagicMock()
+        with patch.object(
+            view_user,
+            "fetch_all_sensitive",
+            side_effect=pymysql.MySQLError("Mocked MySQL failure"),
+        ):
+            with pytest.raises(Exception) as exc_info:
                 view_user.check_user_exist_and_password("Test-Admin", "password")
             view_user.logger.error.assert_any_call(
-                "Unable to complete: SELECT * FROM `VV.users` WHERE user_name=%s. MySQL error: Mocked MySQL failure"
+                "Unexpected error when trying to get user login: Mocked MySQL failure"
             )
